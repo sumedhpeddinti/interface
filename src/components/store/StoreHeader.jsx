@@ -28,7 +28,7 @@ export function StoreHeader({
     <header className="no-print sticky top-0 z-20 border-b border-zinc-200 bg-white">
       <div className="flex h-14 items-center justify-between gap-4 px-4 lg:px-6">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="hidden text-xs text-zinc-400 sm:inline">Ganesh Café</span>
+          <span className="hidden text-xs text-zinc-400 sm:inline">Beno</span>
           <ChevronRight size={13} strokeWidth={2} className="hidden text-zinc-300 sm:inline" />
           <h1 className="truncate text-sm font-semibold text-zinc-900">{title}</h1>
           <Badge tone={storeOpen ? 'emerald' : 'rose'} size="sm" dot pulse={storeOpen}>

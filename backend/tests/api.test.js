@@ -47,7 +47,7 @@ describe('Backend REST API Integration Tests', () => {
     }
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
-    expect(res.body.data.restaurant.name).toBe('Ganesh Café')
+    expect(res.body.data.restaurant.name).toBe('Beno')
     expect(res.body.data.menu).toBeDefined()
     expect(res.body.data.tables.length).toBeGreaterThan(0)
     expect(res.body.data.orders).toBeDefined()

@@ -215,7 +215,7 @@ export async function showSystemNotification({
 }
 
 /** Turn a store push entry into the payload the operating system expects. */
-export function notificationPayload(entry, restaurant = 'Ganesh Café') {
+export function notificationPayload(entry, restaurant = 'Beno') {
   if (!entry) return null
   const channel =
     entry.kind === 'campaign'

@@ -64,9 +64,9 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
     const permission = await os.request()
     if (permission === 'granted') {
       await showSystemNotification({
-        title: 'Ganesh Café installed',
+        title: 'Beno installed',
         body: `We will ping this device the moment your order is ready. 10% off (${rewardCode}) is on.`,
-        tag: 'ganesh-cafe-installed',
+        tag: 'beno-installed',
         kind: 'campaign',
       })
     }
@@ -78,9 +78,9 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
     const permission = await os.request()
     if (permission === 'granted') {
       await showSystemNotification({
-        title: 'Notifications enabled · Ganesh Café',
+        title: 'Notifications enabled · Beno',
         body: '2% extra discount applied! We will ping this device when your food is ready.',
-        tag: 'ganesh-cafe-alerts-enabled',
+        tag: 'beno-alerts-enabled',
         kind: 'campaign',
       })
     }
@@ -147,9 +147,9 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
               const permission = await os.request()
               if (permission === 'granted') {
                 await showSystemNotification({
-                  title: 'Notifications enabled · Ganesh Café',
+                  title: 'Notifications enabled · Beno',
                   body: '2% extra discount applied! We will ping this device when your food is ready.',
-                  tag: 'ganesh-cafe-alerts-enabled',
+                  tag: 'beno-alerts-enabled',
                   kind: 'campaign',
                 })
               }
@@ -175,7 +175,7 @@ export function InstallHelpModal({ open, onClose, onClaim }) {
     <Modal
       open={open}
       onClose={onClose}
-      title="Install Ganesh Café"
+      title="Install Beno"
       subtitle={`${installPlatformLabel(platform)} · two taps, then you are done`}
       icon={Icon}
       size="sm"

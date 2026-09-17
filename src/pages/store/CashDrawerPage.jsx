@@ -66,7 +66,7 @@ function ShiftSummaryModal({ open, onClose, record, restaurant }) {
       <div className="mx-auto max-w-md font-mono">
         <div className="text-center">
           <p className="text-sm font-bold uppercase tracking-wider text-zinc-900">
-            {restaurant?.name || 'Ganesh Café'}
+            {restaurant?.name || 'Beno'}
           </p>
           <p className="mt-0.5 text-[11px] text-zinc-600">
             Shift reconciliation · {record.id}

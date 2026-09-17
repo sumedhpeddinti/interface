@@ -1159,7 +1159,7 @@ export function StoreProvider({ children }) {
         syncWithServer()
         if (campaign && campaign.status !== 'scheduled') {
           showSystemNotification({
-            title: campaign.heading || campaign.name || 'Ganesh Café',
+            title: campaign.heading || campaign.name || 'Beno',
             body: campaign.body || '',
             coupon: campaign.coupon || null,
             kind: 'campaign',

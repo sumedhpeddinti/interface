@@ -102,7 +102,7 @@ describe('navigation', () => {
 
   it('sends an unknown URL back to the guest app', () => {
     const { container } = renderApp('/this/does/not/exist')
-    expect(container.textContent).toContain('Ganesh Café')
+    expect(container.textContent).toContain('Beno')
     expect(screen.getByText(/Call Waiter/i)).toBeTruthy()
   })
 

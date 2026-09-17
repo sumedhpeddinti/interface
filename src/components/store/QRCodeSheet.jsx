@@ -16,7 +16,7 @@ export function QrCard({ card, className, compact = false, tagline }) {
       <div className="flex w-full items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-[11px] font-semibold uppercase tracking-wider text-zinc-900">
-            Ganesh Café
+            Beno
           </p>
           <p className="truncate text-[9px] text-zinc-500">{card.subtitle}</p>
         </div>

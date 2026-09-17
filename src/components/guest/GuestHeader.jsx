@@ -55,7 +55,7 @@ export function GuestHeader({
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <p className="truncate text-sm font-semibold leading-tight text-zinc-900">
-                  Ganesh Café
+                  Beno
                 </p>
                 <TableSwitcher tables={tables} tableId={tableId} onChange={onTableChange} />
               </div>

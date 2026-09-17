@@ -85,7 +85,7 @@ export default function GuestsPage() {
     setNotifySentSuccess(false)
     setNotifyDraft({
       title: `Special treat for you, ${guest.name.split(' ')[0]}! 🎉`,
-      body: `Enjoy 20% off on your favorite ${guest.favoriteDish || 'delicacies'} at Ganesh Café!`,
+      body: `Enjoy 20% off on your favorite ${guest.favoriteDish || 'delicacies'} at Beno!`,
       coupon: 'FEAST20',
     })
   }

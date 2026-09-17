@@ -59,7 +59,7 @@ export function ThermalInvoice({ open, onClose, invoice, restaurant }) {
       <div className="mx-auto w-[302px] rounded-sm border border-zinc-200 bg-white px-3 py-4 font-mono">
         <div className="text-center">
           <p className="text-[13px] font-bold uppercase tracking-wider text-zinc-900">
-            {restaurant?.name || 'Ganesh Café'}
+            {restaurant?.name || 'Beno'}
           </p>
           <p className="mt-0.5 text-[10px] leading-relaxed text-zinc-600">
             {restaurant?.address}

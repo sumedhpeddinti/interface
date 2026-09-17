@@ -94,7 +94,7 @@ describe('guest app', () => {
   /* Scanning a QR lands on the menu ready to order. */
   it('lands on the menu ready to order', () => {
     const { container } = renderGuest('/')
-    expect(screen.getByText('Ganesh Café')).toBeTruthy()
+    expect(screen.getByText('Beno')).toBeTruthy()
     expect(screen.getByText(/Call Waiter/i)).toBeTruthy()
     expect(screen.getByPlaceholderText(/Search the menu/i)).toBeTruthy()
     expect(container.textContent).toMatch(/Top Picks/)

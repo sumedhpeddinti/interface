@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Ganesh Café — Restaurant Operating Platform",
-  "short_name": "Ganesh Café",
-  "description": "Guest QR ordering, kitchen display, billing and back-of-house for Ganesh Café.",
+  "name": "Beno — Restaurant Operating Platform",
+  "short_name": "Beno",
+  "description": "Guest QR ordering, kitchen display, billing and back-of-house for Beno.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

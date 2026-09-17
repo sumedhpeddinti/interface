@@ -83,9 +83,9 @@ export default function GuestPage() {
     }
     if (via === 'prompt') {
       showSystemNotification({
-        title: 'Ganesh Café installed',
+        title: 'Beno installed',
         body: `Your flat 10% off (${INSTALL_REWARD.code}) is unlocked at table ${tableId}.`,
-        tag: 'ganesh-cafe-installed',
+        tag: 'beno-installed',
         kind: 'campaign',
       })
     }
@@ -347,7 +347,7 @@ export default function GuestPage() {
 
               <div className="border-t border-zinc-200 bg-zinc-50 px-4 py-5 text-center">
                 <Badge tone="zinc" size="sm">
-                  Ganesh Café · {table?.section}
+                  Beno · {table?.section}
                 </Badge>
                 <p className="mt-2 text-[11px] leading-relaxed text-zinc-400">
                   Order as many rounds as you like — settle everything together at the end. Prices

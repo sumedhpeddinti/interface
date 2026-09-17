@@ -86,12 +86,12 @@ describe('payload mapping', () => {
         body: 'Enjoy flat 20% off this weekend.',
         coupon: 'WELCOME20',
       },
-      'Ganesh Café',
+      'Beno',
     )
     expect(payload.title).toBe('We miss you! Flat 20% Off')
     expect(payload.tag).toBe('PN-0009')
     expect(payload.coupon).toBe('WELCOME20')
-    expect(payload.source).toBe('WhatsApp · Ganesh Café')
+    expect(payload.source).toBe('WhatsApp · Beno')
   })
 
   it('labels a kitchen push as the kitchen', () => {

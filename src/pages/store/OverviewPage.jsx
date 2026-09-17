@@ -65,7 +65,7 @@ export default function OverviewPage() {
     <div className="space-y-5">
       <PageHeader
         title="Overview"
-        description="Live position for Ganesh Café — revenue taken, tables in service, what is on the pass, and how marketing is performing."
+        description="Live position for Beno — revenue taken, tables in service, what is on the pass, and how marketing is performing."
         actions={
           <>
             <Button as={Link} to="/store/live-orders" variant="secondary" size="sm">

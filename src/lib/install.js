@@ -72,7 +72,7 @@ export function installState() {
 export function installStateLabel(state = installState()) {
   switch (state) {
     case INSTALL_STATE.INSTALLED:
-      return 'Installed — Ganesh Café opens from your home screen'
+      return 'Installed — Beno opens from your home screen'
     case INSTALL_STATE.READY:
       return 'Ready to install — one tap opens the browser’s install dialog'
     case INSTALL_STATE.MANUAL:
@@ -169,7 +169,7 @@ export function installSteps(platform = installPlatform()) {
     return [
       { step: 'Tap the Share button', detail: 'The square with the arrow, in Safari’s toolbar.' },
       { step: 'Choose “Add to Home Screen”', detail: 'Scroll the share sheet if you do not see it.' },
-      { step: 'Tap “Add”', detail: 'Ganesh Café appears on your home screen as an app.' },
+      { step: 'Tap “Add”', detail: 'Beno appears on your home screen as an app.' },
     ]
   }
   if (platform === 'android') {
@@ -185,7 +185,7 @@ export function installSteps(platform = installPlatform()) {
       detail: 'A small monitor-with-arrow, at the right end of the URL field.',
     },
     {
-      step: 'Or open the browser menu → “Install Ganesh Café”',
+      step: 'Or open the browser menu → “Install Beno”',
       detail: 'Chrome, Edge and Brave all put it under the ⋮ menu.',
     },
     { step: 'Confirm the install', detail: 'It opens in its own window, like a native app.' },

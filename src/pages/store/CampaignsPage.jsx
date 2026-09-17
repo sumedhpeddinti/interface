@@ -55,7 +55,7 @@ const TEMPLATES = [
     audience: 'all',
   },
   {
-    heading: 'A thank you from Ganesh Café',
+    heading: 'A thank you from Beno',
     body: 'You are one of our top tables — here is 15% off your next visit, on the house.',
     coupon: 'PANEER15',
     audience: 'vip',
@@ -117,8 +117,8 @@ export default function CampaignsPage() {
   async function sendTest() {
     const testPayload = {
       channel: 'push',
-      name: 'Test broadcast · Ganesh Café',
-      heading: 'Test broadcast · Ganesh Café',
+      name: 'Test broadcast · Beno',
+      heading: 'Test broadcast · Beno',
       body: 'This is a real system notification. If you can see it, the channel is live.',
       coupon: 'TEST10',
       audience: 'all',
@@ -130,7 +130,7 @@ export default function CampaignsPage() {
     const result = await showSystemNotification({
       title: testPayload.heading,
       body: testPayload.body,
-      tag: 'ganesh-cafe-test',
+      tag: 'beno-test',
       kind: 'campaign',
     })
     setTestOutcome(result)
@@ -366,10 +366,10 @@ export default function CampaignsPage() {
                 <div className="rounded-md border border-zinc-200 bg-white p-2.5 shadow-sm">
                   <div className="flex items-center gap-2">
                     <span className="flex h-5 w-5 items-center justify-center rounded bg-zinc-900 text-[9px] font-semibold text-white">
-                      GC
+                      B
                     </span>
                     <span className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400">
-                      {channel === 'whatsapp' ? 'WhatsApp · Ganesh Café' : 'Web Push · Ganesh Café'}
+                      {channel === 'whatsapp' ? 'WhatsApp · Beno' : 'Web Push · Beno'}
                     </span>
                   </div>
                   <p className="mt-1.5 text-[11px] font-semibold leading-snug text-zinc-900">

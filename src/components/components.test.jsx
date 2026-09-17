@@ -229,7 +229,7 @@ describe('guest components', () => {
         onTableChange={noop}
       />,
     )
-    expect(container.textContent).toContain('Ganesh Café')
+    expect(container.textContent).toContain('Beno')
     expect(container.textContent).toContain('Table T1')
     expect(container.querySelector('[aria-haspopup="listbox"]')).toBeTruthy()
   })
@@ -530,7 +530,7 @@ describe('store components', () => {
         onDownloadCard={noop}
       />,
     )
-    expect(container.textContent).toContain('Ganesh Café')
+    expect(container.textContent).toContain('Beno')
     expect(container.textContent).toContain(state.restaurant.tagline)
     cleanup()
     const { container: single } = mount(<QrCard card={cards[0]} />)
@@ -577,7 +577,7 @@ describe('store components', () => {
         onLock={noop}
       />,
     )
-    expect(header.textContent).toMatch(/Overview|Ganesh Café/)
+    expect(header.textContent).toMatch(/Overview|Beno/)
     expect(header.textContent).toContain('2 new')
   })
 })

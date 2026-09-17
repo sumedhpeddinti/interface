@@ -22,7 +22,7 @@ export function NotificationBridge() {
   const { state, actions } = useStore()
   const feed = state.pushNotifications || []
   const enabled = state.settings?.osNotifications !== false
-  const restaurant = state.restaurant?.name || 'Ganesh Café'
+  const restaurant = state.restaurant?.name || 'Beno'
 
   const delivered = useRef(new Set())
   const primed = useRef(false)

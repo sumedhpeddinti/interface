@@ -13,16 +13,21 @@ export async function getFullStoreState(restaurantId = env.DEFAULT_RESTAURANT_ID
     restaurant = await prisma.restaurant.create({
       data: {
         id: restaurantId,
-        name: 'Ganesh Café',
+        name: 'Beno',
         tagline: 'Kitchen & Bar · Since 1998',
         gstin: '27AABCU9603R1ZM',
         fssai: '11522998000123',
         address: '12 Koregaon Park Lane 5, Pune 411001',
         phone: '+91 98200 11223',
-        email: 'hello@ganeshcafe.in',
-        upi: 'ganeshcafe@upi',
+        email: 'hello@beno.in',
+        upi: 'beno@upi',
         currency: 'INR',
       },
+    })
+  } else if (restaurant.name === 'Ganesh Café') {
+    restaurant = await prisma.restaurant.update({
+      where: { id: restaurant.id },
+      data: { name: 'Beno', email: 'hello@beno.in', upi: 'beno@upi' },
     })
   }
   restaurantId = restaurant.id

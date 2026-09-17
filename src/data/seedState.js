@@ -81,14 +81,14 @@ function makeInvoice(invoice) {
 }
 
 export const RESTAURANT = {
-  name: 'Ganesh Café',
+  name: 'Beno',
   tagline: 'Kitchen & Bar · Since 1998',
   gstin: '27AABCU9603R1ZM',
   fssai: '11522998000123',
   address: '12 Koregaon Park Lane 5, Pune 411001',
   phone: '+91 98200 11223',
-  email: 'hello@ganeshcafe.in',
-  upi: 'ganeshcafe@upi',
+  email: 'hello@beno.in',
+  upi: 'beno@upi',
   currency: 'INR',
 }
 

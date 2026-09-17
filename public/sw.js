@@ -28,12 +28,12 @@ self.addEventListener('push', (event) => {
     payload = event.data ? event.data.json() : {}
   } catch (_) {
     payload = {
-      title: 'Ganesh Café',
-      body: event.data ? event.data.text() : 'You have a new update from Ganesh Café!',
+      title: 'Beno',
+      body: event.data ? event.data.text() : 'You have a new update from Beno!',
     }
   }
 
-  const title = payload.title || payload.heading || payload.name || 'Ganesh Café'
+  const title = payload.title || payload.heading || payload.name || 'Beno'
   const options = {
     body: payload.body || 'Tap to view details',
     icon: '/icon-192.png',
@@ -41,7 +41,7 @@ self.addEventListener('push', (event) => {
     vibrate: [200, 100, 200],
     data: payload,
     requireInteraction: true,
-    tag: payload.tag || payload.id || 'ganesh-cafe-push',
+    tag: payload.tag || payload.id || 'beno-push',
     renotify: true,
   }
 

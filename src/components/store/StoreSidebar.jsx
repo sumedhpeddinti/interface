@@ -83,7 +83,7 @@ export function StoreSidebar({ badges = {}, staff, storeOpen, onLock, onReset })
           <ChefHat size={16} strokeWidth={1.8} />
         </span>
         <div className="hidden min-w-0 lg:block">
-          <p className="truncate text-sm font-semibold leading-tight text-zinc-900">Ganesh Café</p>
+          <p className="truncate text-sm font-semibold leading-tight text-zinc-900">Beno</p>
           <p className="flex items-center gap-1.5 text-[10px] leading-tight text-zinc-500">
             <Dot tone={storeOpen ? 'emerald' : 'rose'} pulse={storeOpen} />
             {storeOpen ? 'Open · Service' : 'Closed'}

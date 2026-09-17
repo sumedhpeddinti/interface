@@ -45,7 +45,7 @@ export function FeedbackModal({
           </span>
           <h2 className="mt-3 text-sm font-semibold text-zinc-900">Thank you, {guestName}!</h2>
           <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-            Your feedback is on the manager&apos;s board. We hope to see you at Ganesh Café again
+            Your feedback is on the manager&apos;s board. We hope to see you at Beno again
             soon.
           </p>
           <div className="mt-4">
