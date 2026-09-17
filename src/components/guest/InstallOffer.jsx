@@ -109,9 +109,16 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
             <span className="tnum">{rewardCode}</span> applied · 10% off every round
           </span>
           {notificationsOn ? (
-            <Badge tone="emerald" size="sm" icon={BellRing}>
-              Alerts on · 2% extra applied
-            </Badge>
+            <button
+              type="button"
+              onClick={() => setNotifModalOpen(true)}
+              className="cursor-pointer transition-transform hover:scale-102"
+              title="Click to view notification details"
+            >
+              <Badge tone="emerald" size="sm" icon={BellRing}>
+                Alerts on · 2% extra applied
+              </Badge>
+            </button>
           ) : null}
         </div>
       ) : (
