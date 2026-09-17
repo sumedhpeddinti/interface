@@ -109,16 +109,9 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
             <span className="tnum">{rewardCode}</span> applied · 10% off every round
           </span>
           {notificationsOn ? (
-            <button
-              type="button"
-              onClick={() => setNotifModalOpen(true)}
-              className="cursor-pointer transition-transform hover:scale-102"
-              title="Click to view notification details"
-            >
-              <Badge tone="emerald" size="sm" icon={BellRing}>
-                Alerts on · 2% extra applied
-              </Badge>
-            </button>
+            <Badge tone="emerald" size="sm" icon={BellRing}>
+              Alerts on · 2% extra applied
+            </Badge>
           ) : null}
         </div>
       ) : (
@@ -150,55 +143,23 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
             size="xs"
             variant="secondary"
             className="!text-[10px] !py-0.5 !px-2.5 font-medium text-amber-800 bg-white hover:bg-amber-50 border-amber-300 shadow-2xs"
-            onClick={() => setNotifModalOpen(true)}
+            onClick={async () => {
+              const permission = await os.request()
+              if (permission === 'granted') {
+                await showSystemNotification({
+                  title: 'Notifications enabled · Ganesh Café',
+                  body: '2% extra discount applied! We will ping this device when your food is ready.',
+                  tag: 'ganesh-cafe-alerts-enabled',
+                  kind: 'campaign',
+                })
+              }
+            }}
           >
             <BellRing size={10} className="mr-1 text-amber-600" />
             Turn on notifications
           </Button>
         </div>
       )}
-
-      {/* Notification Permission Popup Modal */}
-      <Modal
-        open={notifModalOpen}
-        onClose={() => setNotifModalOpen(false)}
-        title="Turn on Notifications"
-        subtitle="Get 2% extra off on your orders"
-        icon={BellRing}
-        size="sm"
-        footer={
-          <div className="flex w-full justify-end gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setNotifModalOpen(false)}
-            >
-              Deny
-            </Button>
-            <Button
-              size="sm"
-              className="!bg-emerald-600 hover:!bg-emerald-700 active:!bg-emerald-800 !text-white !border-emerald-600"
-              onClick={handleApplyNotification}
-            >
-              <Check size={12} strokeWidth={2.4} className="mr-1" />
-              Apply
-            </Button>
-          </div>
-        }
-      >
-        <div className="space-y-3">
-          <p className="text-xs leading-relaxed text-zinc-600">
-            Keep notifications on to receive real-time updates when your food is being prepared and served, and get an{' '}
-            <strong className="font-semibold text-emerald-700">extra 2% discount</strong> applied directly to your bill.
-          </p>
-          <div className="rounded-md border border-emerald-100 bg-emerald-50/70 p-2.5">
-            <div className="flex items-center gap-2 text-xs font-medium text-emerald-800">
-              <Percent size={13} className="shrink-0 text-emerald-600" />
-              <span>Instant 2% Extra Off + Table Alerts</span>
-            </div>
-          </div>
-        </div>
-      </Modal>
     </div>
   )
 }

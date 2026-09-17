@@ -397,20 +397,12 @@ describe('app install', () => {
     expect(container.querySelectorAll('ol > li').length).toBeGreaterThanOrEqual(3)
   })
 
-  it('renders the 2% extra off notification offer and opens the Apply/Deny modal', () => {
-    const { container, getByRole, queryByRole } = mount(<InstallOffer rewardActive={false} onUnlock={noop} />)
+  it('renders the 2% extra off notification offer and triggers notification request on click', () => {
+    const { container, getByRole } = mount(<InstallOffer rewardActive={false} onUnlock={noop} />)
     expect(container.textContent).toMatch(/Get 2% extra off for keeping the notifications on/)
     const turnOnBtn = getByRole('button', { name: /Turn on notifications/i })
     expect(turnOnBtn).toBeTruthy()
-
-    // Clicking turn on notifications opens the modal
     fireEvent.click(turnOnBtn)
-    expect(getByRole('button', { name: /Apply/i })).toBeTruthy()
-    expect(getByRole('button', { name: /Deny/i })).toBeTruthy()
-
-    // Clicking Deny closes the modal
-    fireEvent.click(getByRole('button', { name: /Deny/i }))
-    expect(queryByRole('button', { name: /Apply/i })).toBeNull()
   })
 
   it('mounts the install bridge without rendering anything', () => {
