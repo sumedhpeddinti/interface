@@ -94,9 +94,30 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
             <Check size={12} strokeWidth={2.6} />
             <span className="tnum">{rewardCode}</span> applied · 10% off every round
           </span>
-          <Badge tone={notificationsOn ? 'emerald' : 'zinc'} size="sm" icon={BellRing}>
-            {notificationsOn ? 'Alerts on' : 'Alerts off'}
-          </Badge>
+          {notificationsOn ? (
+            <Badge tone="emerald" size="sm" icon={BellRing}>
+              Alerts on
+            </Badge>
+          ) : (
+            <Button
+              size="xs"
+              variant="secondary"
+              className="!text-[10px] !py-0.5 !px-2 text-amber-700 bg-amber-50 hover:bg-amber-100 border-amber-200"
+              onClick={async () => {
+                const p = await os.request()
+                if (p === 'granted') {
+                  showSystemNotification({
+                    title: 'Alerts enabled · Ganesh Café',
+                    body: 'You will receive instant updates on this device!',
+                    kind: 'campaign',
+                  })
+                }
+              }}
+            >
+              <BellRing size={10} className="mr-1 text-amber-600" />
+              Enable alerts
+            </Button>
+          )}
         </span>
       ) : (
         <>

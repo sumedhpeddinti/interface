@@ -1112,7 +1112,13 @@ export function StoreProvider({ children }) {
       const socketUrl = import.meta.env?.VITE_API_URL
         ? import.meta.env.VITE_API_URL.replace('/api', '')
         : (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:4000')
-      socket = io(socketUrl, { autoConnect: true, reconnection: true })
+      socket = io(socketUrl, {
+        transports: ['websocket', 'polling'],
+        autoConnect: true,
+        reconnection: true,
+        reconnectionAttempts: 20,
+        reconnectionDelay: 1000,
+      })
 
       socket.on('connect', () => {
         socket.emit('join_restaurant', 'rest_ganesh_cafe_01')
