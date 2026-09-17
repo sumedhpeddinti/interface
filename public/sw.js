@@ -21,6 +21,33 @@ self.addEventListener('activate', (event) => {
    staying silent keeps the browser's normal network handling in place. */
 self.addEventListener('fetch', () => {})
 
+/* Production-grade Web Push payload handler: wakes up even if browser tab is closed */
+self.addEventListener('push', (event) => {
+  let payload = {}
+  try {
+    payload = event.data ? event.data.json() : {}
+  } catch (_) {
+    payload = {
+      title: 'Ganesh Café',
+      body: event.data ? event.data.text() : 'You have a new update from Ganesh Café!',
+    }
+  }
+
+  const title = payload.title || payload.heading || payload.name || 'Ganesh Café'
+  const options = {
+    body: payload.body || 'Tap to view details',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: payload,
+    requireInteraction: true,
+    tag: payload.tag || payload.id || 'ganesh-cafe-push',
+    renotify: true,
+  }
+
+  event.waitUntil(self.registration.showNotification(title, options))
+})
+
 self.addEventListener('notificationclick', (event) => {
   const data = event.notification.data || {}
   event.notification.close()

@@ -34,6 +34,7 @@ model Restaurant {
   feedback         Feedback[]
   campaigns        Campaign[]
   auditEvents      AuditEvent[]
+  pushSubscriptions PushSubscription[]
 }
 
 model Staff {
@@ -278,4 +279,15 @@ model AuditEvent {
   message      String
   at           Float
   actor        String     @default("system")
+}
+
+model PushSubscription {
+  id           String     @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  endpoint     String     @unique
+  p256dh       String
+  auth         String
+  userAgent    String?
+  createdAt    DateTime   @default(now())
 }

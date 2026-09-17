@@ -44,11 +44,65 @@ export function permissionTone(permission = notificationPermission()) {
   return 'amber'
 }
 
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+  return outputArray
+}
+
+export async function syncPushSubscription() {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return null
+  if (window.Notification?.permission !== 'granted') return null
+
+  try {
+    let registration = await navigator.serviceWorker.getRegistration()
+    if (!registration && navigator.serviceWorker.ready) {
+      registration = await navigator.serviceWorker.ready
+    }
+    if (!registration) {
+      registration = await navigator.serviceWorker.register(WORKER_URL, { scope: '/' })
+    }
+    if (!registration || !registration.pushManager) return null
+
+    let subscription = await registration.pushManager.getSubscription()
+    if (!subscription) {
+      const vapidRes = await fetch('/api/push/vapid-key').then((r) => r.json()).catch(() => null)
+      const vapidKey = vapidRes?.data?.publicKey
+      if (vapidKey) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidKey),
+        })
+      }
+    }
+
+    if (subscription) {
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: subscription.toJSON() }),
+      }).catch(() => {})
+      return subscription
+    }
+  } catch (err) {
+    console.warn('Push subscription sync notice:', err)
+  }
+  return null
+}
+
 /** Must be called from a user gesture, or the browser silently ignores it. */
 export async function requestNotificationPermission() {
   if (!notificationsSupported()) return PERMISSION_UNSUPPORTED
   try {
     const result = await window.Notification.requestPermission()
+    if (result === 'granted') {
+      syncPushSubscription().catch(() => {})
+    }
     return result || notificationPermission()
   } catch {
     return notificationPermission()
@@ -59,7 +113,11 @@ export async function registerNotificationWorker() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return null
   if (typeof window !== 'undefined' && window.isSecureContext === false) return null
   try {
-    return await navigator.serviceWorker.register(WORKER_URL, { scope: '/' })
+    const reg = await navigator.serviceWorker.register(WORKER_URL, { scope: '/' })
+    if (window.Notification?.permission === 'granted') {
+      syncPushSubscription().catch(() => {})
+    }
+    return reg
   } catch {
     return null
   }

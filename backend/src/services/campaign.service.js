@@ -1,6 +1,7 @@
 import { prisma } from '../db/client.js'
 import { env } from '../config/env.js'
 import { broadcastRestaurantEvent } from '../realtime/socket.js'
+import { sendPushNotificationToAll } from './push.service.js'
 
 export async function getCampaigns(restaurantId = env.DEFAULT_RESTAURANT_ID) {
   return prisma.campaign.findMany({
@@ -49,5 +50,19 @@ export async function createCampaign(restaurantId, data) {
   })
 
   broadcastRestaurantEvent(restaurantId, 'campaign:created', campaign)
+
+  // Send real WebPush to all subscribed Android/iOS/Desktop device endpoints
+  try {
+    sendPushNotificationToAll(restaurantId, {
+      title: campaign.heading || campaign.name || 'Ganesh Café',
+      body: campaign.body || '',
+      tag: campaign.id,
+      id: campaign.id,
+      coupon: campaign.coupon || null,
+      kind: 'campaign',
+      url: '/',
+    }).catch((err) => console.warn('WebPush delivery notice:', err.message))
+  } catch (_) {}
+
   return campaign
 }

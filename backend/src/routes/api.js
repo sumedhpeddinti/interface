@@ -11,6 +11,7 @@ import campaignRoutes from './campaign.routes.js'
 import expenseRoutes from './expense.routes.js'
 import feedbackRoutes from './feedback.routes.js'
 import healthRoutes from './health.routes.js'
+import pushRoutes from './push.routes.js'
 
 const router = Router()
 
@@ -24,6 +25,7 @@ router.use('/', paymentRoutes)
 router.use('/', cashDrawerRoutes)
 router.use('/', guestRoutes)
 router.use('/', campaignRoutes)
+router.use('/', pushRoutes)
 router.use('/', expenseRoutes)
 router.use('/', feedbackRoutes)
 
