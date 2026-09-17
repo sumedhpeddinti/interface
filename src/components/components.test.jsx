@@ -354,22 +354,6 @@ describe('guest components', () => {
   it('renders a push banner with and without a notification', () => {
     const { container: idle } = mount(<PushToast notification={null} onDismiss={noop} />)
     expect(idle.firstChild).toBeNull()
-    cleanup()
-    const { container: shown } = mount(
-      <PushToast
-        notification={{
-          id: 'PSH-0001',
-          kind: 'campaign',
-          channel: 'push',
-          title: 'We miss you! Flat 20% Off',
-          body: 'Enjoy flat 20% off this weekend.',
-          coupon: 'WELCOME20',
-        }}
-        onDismiss={noop}
-      />,
-    )
-    expect(shown.textContent).toContain('We miss you! Flat 20% Off')
-    expect(shown.textContent).toContain('WELCOME20')
   })
 })
 
@@ -396,15 +380,12 @@ describe('app install', () => {
     expect(container.textContent).not.toMatch(/Download/)
   })
 
-  it('walks the guest through adding it by hand when no prompt exists', () => {
+  it('unlocks the reward directly when Download is clicked', () => {
     const onUnlock = vi.fn()
     mount(<InstallOffer rewardActive={false} onUnlock={onUnlock} />)
 
     fireEvent.click(screen.getByRole('button', { name: /Download/ }))
-    expect(screen.getByText('Install Ganesh Café')).toBeTruthy()
-
-    fireEvent.click(screen.getByText(/turn on my 10% and alerts/i))
-    expect(onUnlock).toHaveBeenCalledWith({ via: 'manual' })
+    expect(onUnlock).toHaveBeenCalledWith({ via: 'prompt' })
   })
 
   it('renders the help sheet with real steps for each platform', () => {

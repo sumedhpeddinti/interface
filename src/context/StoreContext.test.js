@@ -614,10 +614,10 @@ describe('feedback, menu and admin', () => {
     expect(next.orders.find((order) => order.tableId === 'T9').round).toBe(1)
   })
 
-  it('resets to the factory seed', () => {
+  it('resets to clean state', () => {
     const dirty = placeOrder(withCart())
     expect(dirty.orders.length).toBe(buildSeedState().orders.length + 1)
     const reset = storeReducer(dirty, { type: 'RESET_DEMO' })
-    expect(reset.orders.length).toBe(buildSeedState().orders.length)
+    expect(reset.orders.length).toBe(0)
   })
 })

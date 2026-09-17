@@ -49,37 +49,18 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
   async function start() {
     if (phase !== 'idle') return
 
-    /* No programmatic prompt (iOS Safari, Firefox, in-app browsers): the
-       honest fallback is the manual sheet, which still ends in the reward. */
-    if (!canPromptInstall()) {
-      setHelpOpen(true)
-      return
-    }
-
-    /* Step 1 — the browser's real install dialog. The address-bar icon and
-       the home-screen icon come from the manifest; this tap is what opens it. */
     setPhase('installing')
-    const result = await promptInstall()
 
-    if (result.outcome === 'dismissed') {
-      /* The guest said no to the browser's own dialog — leave quietly. */
-      setPhase('idle')
-      return
+    if (canPromptInstall()) {
+      try {
+        await promptInstall()
+      } catch (_) {}
     }
-    if (result.outcome !== 'accepted') {
-      /* Spent or refused prompt: fall back to the manual walkthrough. */
-      setPhase('idle')
-      setHelpOpen(true)
-      return
-    }
+
     onUnlock?.({ via: 'prompt' })
-
-    /* Step 2 — notifications, in the same gesture. If the browser shows its
-       own permission bubble, this is what triggers it. */
     setPhase('notifying')
-    const permission = await os.request()
 
-    /* Step 3 — proof, not a promise: a real notification on the device. */
+    const permission = await os.request()
     if (permission === 'granted') {
       await showSystemNotification({
         title: 'Ganesh Café installed',
@@ -134,25 +115,6 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
           </Button>
         </>
       )}
-      <InstallHelpModal
-        open={helpOpen}
-        onClose={() => setHelpOpen(false)}
-        onClaim={async () => {
-          setHelpOpen(false)
-          onUnlock?.({ via: 'manual' })
-          setPhase('notifying')
-          const permission = await os.request()
-          if (permission === 'granted') {
-            await showSystemNotification({
-              title: 'Ganesh Café installed',
-              body: `We will ping this device the moment your order is ready. 10% off (${rewardCode}) is on.`,
-              tag: 'ganesh-cafe-installed',
-              kind: 'campaign',
-            })
-          }
-          setPhase('done')
-        }}
-      />
     </div>
   )
 }

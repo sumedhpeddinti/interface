@@ -5,17 +5,37 @@
   "type": "module",
   "description": "Restaurant Operating Platform — Guest QR Dining PWA + Medusa-style Managerial POS Suite",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "start": "node backend/src/server.js",
+    "dev": "concurrently -k -p \"[{name}]\" -c \"cyan,magenta\" -n \"backend,frontend\" \"node backend/src/server.js\" \"vite\"",
+    "server": "node backend/src/server.js",
+    "client": "vite",
+    "build": "vite build && prisma generate",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:push": "prisma db push",
+    "db:seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@prisma/client": "^6.4.0",
+    "bcryptjs": "^3.0.3",
+    "concurrently": "^10.0.5",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.46.0",
+    "prisma": "^6.4.0",
     "qrcode": "^1.5.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "react-router-dom": "^7.18.4"
+    "react-router-dom": "^7.18.4",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "supertest": "^7.2.2",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

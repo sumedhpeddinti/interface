@@ -252,8 +252,7 @@ export default function StaffPage() {
         <CardBody className="flex flex-wrap items-center justify-between gap-4">
           <p className="max-w-xl text-xs leading-relaxed text-zinc-500">
             Locking hides every screen behind a 4-digit keypad. A cashier PIN gets back to the
-            register; anything else needs the manager PIN (tips: the demo PINs are listed on the
-            keypad itself).
+            register; anything else needs the manager PIN (Staff PINs: Manager 1234, Cashier 1111, Kitchen 2222, Waiter 3333).
           </p>
           <Button variant="primary" size="sm" onClick={() => actions.lockSession()}>
             <Lock size={13} strokeWidth={1.9} />

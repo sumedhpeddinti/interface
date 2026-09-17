@@ -1,0 +1,281 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Restaurant {
+  id          String   @id @default(uuid())
+  name        String
+  tagline     String?
+  gstin       String?
+  fssai       String?
+  address     String?
+  phone       String?
+  email       String?
+  upi         String?
+  currency    String   @default("INR")
+  settings    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  staff            Staff[]
+  categories       Category[]
+  menuItems        MenuItem[]
+  tables           Table[]
+  orders           Order[]
+  invoices         Invoice[]
+  cashShifts       CashShift[]
+  expenses         Expense[]
+  customers        Customer[]
+  feedback         Feedback[]
+  campaigns        Campaign[]
+  auditEvents      AuditEvent[]
+}
+
+model Staff {
+  id            String     @id @default(uuid())
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name          String
+  role          String
+  pinHash       String
+  title         String?
+  phone         String?
+  active        Boolean    @default(true)
+  joinedDaysAgo Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  invoicesSettled Invoice[] @relation("CashierInvoices")
+}
+
+model Category {
+  id           String     @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  icon         String?
+  sortOrder    Int        @default(0)
+  active       Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  menuItems    MenuItem[]
+}
+
+model MenuItem {
+  id           String     @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  categoryId   String?
+  category     Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  name         String
+  description  String?
+  price        Float
+  rating       Float      @default(5.0)
+  categoryName String
+  station      String
+  isVeg        Boolean    @default(true)
+  isBestseller Boolean    @default(false)
+  image        String?    @default("")
+  available    Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  orderItems   OrderItem[]
+}
+
+model Table {
+  id           String
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  seats        Int
+  section      String
+  x            Float
+  y            Float
+  shape        String     @default("square")
+  reserved     Boolean    @default(false)
+  qrCode       String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  orders       Order[]
+  invoices     Invoice[]
+  feedback     Feedback[]
+
+  @@id([id, restaurantId])
+}
+
+model Order {
+  id             String      @id
+  orderNumber    Int?
+  restaurantId   String
+  restaurant     Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  tableId        String
+  table          Table       @relation(fields: [tableId, restaurantId], references: [id, restaurantId], onDelete: Cascade)
+  round          Int         @default(1)
+  guestName      String?
+  guestPhone     String?
+  partySize      Int         @default(1)
+  notes          String?     @default("")
+  status         String      @default("sent")
+  readyItemIds   Json?       @default("[]")
+  createdAt      Float
+  acknowledgedAt Float?
+  cookingAt      Float?
+  readyAt        Float?
+  servedAt       Float?
+  settledAt      Float?
+
+  items          OrderItem[]
+  invoices       Invoice[]
+}
+
+model OrderItem {
+  id         String    @id @default(uuid())
+  orderId    String
+  order      Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId String?
+  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+  name       String
+  price      Float
+  qty        Int
+  station    String
+  isVeg      Boolean   @default(true)
+  note       String?   @default("")
+}
+
+model Invoice {
+  id           String     @id
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  tableId      String?
+  table        Table?     @relation(fields: [tableId, restaurantId], references: [id, restaurantId], onDelete: SetNull)
+  orderId      String?
+  order        Order?     @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  guestName    String?
+  guestPhone   String?
+  cashierName  String?
+  cashierId    String?
+  cashier      Staff?     @relation("CashierInvoices", fields: [cashierId], references: [id], onDelete: SetNull)
+  method       String
+  createdAt    Float
+  settledAt    Float
+  shiftId      String?
+  lines        Json
+  totals       Json
+  tendered     Float
+  change       Float
+
+  feedback     Feedback[]
+}
+
+model CashShift {
+  id           String     @id
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  isOpen       Boolean    @default(true)
+  openedAt     Float
+  closedAt     Float?
+  openingFloat Float      @default(0)
+  openedBy     String
+  closedBy     String?
+  cashSales    Float?     @default(0)
+  cashIn       Float?     @default(0)
+  cashOut      Float?     @default(0)
+  expectedCash Float?     @default(0)
+  countedCash  Float?     @default(0)
+  variance     Float?     @default(0)
+  notes        String?    @default("")
+
+  transactions CashTransaction[]
+}
+
+model CashTransaction {
+  id        String    @id
+  shiftId   String
+  shift     CashShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  type      String
+  reason    String
+  amount    Float
+  at        Float
+  by        String
+}
+
+model Expense {
+  id           String     @id
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category     String
+  amount       Float
+  note         String?
+  at           Float
+  by           String
+}
+
+model Customer {
+  id           String     @id
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  name         String
+  phone        String
+  visits       Int        @default(1)
+  totalSpend   Float      @default(0)
+  favoriteDish String?    @default("")
+  vegOnly      Boolean    @default(false)
+  optedOut     Boolean    @default(false)
+  lastVisit    Float
+  joinedAt     Float
+  source       String     @default("qr")
+}
+
+model Feedback {
+  id           String     @id
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  guestName    String
+  tableId      String?
+  table        Table?     @relation(fields: [tableId, restaurantId], references: [id, restaurantId], onDelete: SetNull)
+  rating       Int
+  pills        Json
+  comment      String?    @default("")
+  at           Float
+  invoiceId    String?
+  invoice      Invoice?   @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+}
+
+model Campaign {
+  id            String     @id
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  channel       String
+  name          String
+  heading       String
+  body          String
+  coupon        String?
+  audience      String
+  audienceLabel String?
+  audienceSize  Int        @default(0)
+  sent          Int        @default(0)
+  opened        Int        @default(0)
+  walkIns       Int        @default(0)
+  revenue       Float      @default(0)
+  status        String     @default("completed")
+  sentAt        Float?
+  scheduleAt    Float?
+  createdBy     String
+}
+
+model AuditEvent {
+  id           String     @id
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  type         String
+  message      String
+  at           Float
+  actor        String     @default("system")
+}

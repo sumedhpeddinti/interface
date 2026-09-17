@@ -2,11 +2,11 @@
    boots into: five tables mid-service, one unacknowledged round, a late KDS
    ticket, three settled invoices and a marketing history to analyse. */
 
-import { mockMenu } from './mockMenu'
-import { mockTables } from './mockTables'
-import { mockGuests } from './mockGuests'
-import { mockStaff, DEFAULT_SESSION_STAFF_ID } from './mockStaff'
-import { computeTotals } from '../lib/pricing'
+import { mockMenu } from './mockMenu.js'
+import { mockTables } from './mockTables.js'
+import { mockGuests } from './mockGuests.js'
+import { mockStaff, DEFAULT_SESSION_STAFF_ID } from './mockStaff.js'
+import { computeTotals } from '../lib/pricing.js'
 
 export const STORAGE_KEY = 'ganesh-cafe-os.v1'
 /* Bump when the persisted shape changes — guests gained an opt-out flag in v2,

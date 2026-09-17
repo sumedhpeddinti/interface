@@ -91,14 +91,17 @@ export async function showSystemNotification({
 
   const options = {
     body,
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
     silent,
-    requireInteraction,
+    requireInteraction: true,
     data: { id: id || tag || null, url, coupon, kind, at },
   }
 
   /* `renotify` is only legal alongside a tag — Chrome throws without one. */
-  if (tag) {
-    options.tag = tag
+  if (tag || id) {
+    options.tag = tag || id
     options.renotify = true
   }
 

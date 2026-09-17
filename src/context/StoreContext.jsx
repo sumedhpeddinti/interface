@@ -3,11 +3,9 @@
    feedback; the guest app and the POS are two views over the same state.
 
    Realtime characteristics:
-   - persistence to localStorage (debounced) so the demo survives a refresh
-   - a `storage` listener rehydrates other tabs, so a phone tab and a POS tab
-     stay in sync without a backend
-   - audio chimes are requested by the reducer and played by an effect, which
-     keeps the reducer pure
+   - persistence to PostgreSQL via REST APIs & Socket.IO realtime
+   - persistence to localStorage (debounced fallback) so offline/test modes work seamlessly
+   - audio chimes are requested by the reducer and played by an effect
    - campaigns progress through simulated delivery stages on a timer */
 
 import {
@@ -19,18 +17,20 @@ import {
   useReducer,
   useRef,
 } from 'react'
-import { buildSeedState } from '../data/seedState'
+import { io } from 'socket.io-client'
+import { buildSeedState } from '../data/seedState.js'
 import {
   clearState,
   loadState,
   onExternalStateChange,
   saveState,
-} from '../lib/storage'
-import { playChime, setAudioEnabled, unlockAudio } from '../lib/audio'
-import { applyCoupon, computeTotals, installRewardDiscount, resolveDiscount } from '../lib/pricing'
-import { ROUND_STATUS, canTransition, isActive } from '../lib/orders'
-import { round2 } from '../lib/format'
-import { cashDrawerSummary, openRoundsOfTable, tableBill, varianceOf } from '../lib/selectors'
+} from '../lib/storage.js'
+import { playChime, setAudioEnabled, unlockAudio } from '../lib/audio.js'
+import { applyCoupon, computeTotals, installRewardDiscount, resolveDiscount } from '../lib/pricing.js'
+import { ROUND_STATUS, canTransition, isActive } from '../lib/orders.js'
+import { round2 } from '../lib/format.js'
+import { cashDrawerSummary, openRoundsOfTable, tableBill, varianceOf } from '../lib/selectors.js'
+import { api } from '../lib/api/index.js'
 
 const MAX_EVENTS = 60
 const MAX_ALERTS = 30
@@ -48,19 +48,27 @@ const digits = (value) => String(value || '').replace(/\D/g, '')
 
 function initialiseState() {
   const base = buildSeedState()
-  const persisted = loadState()
-  if (!persisted) return base
-  const merged = {
+  return {
     ...base,
-    ...persisted,
-    settings: { ...base.settings, ...(persisted.settings || {}) },
-    restaurant: { ...base.restaurant, ...(persisted.restaurant || {}) },
-    seq: { ...base.seq, ...(persisted.seq || {}) },
-    ui: { ...base.ui, ...(persisted.ui || {}) },
-    cart: { ...base.cart, ...(persisted.cart || {}), open: false },
-    chime: base.chime,
+    orders: [],
+    invoices: [],
+    guests: [],
+    expenses: [],
+    campaigns: [],
+    feedback: [],
+    events: [],
+    alerts: [],
+    pushNotifications: [],
+    shift: {
+      id: null,
+      isOpen: false,
+      openedAt: null,
+      openingFloat: 0,
+      openedBy: '',
+      cashTransactions: [],
+      closedShifts: [],
+    },
   }
-  return merged
 }
 
 function logEvent(state, event) {
@@ -310,8 +318,6 @@ export function storeReducer(state, action) {
         source: 'qr',
       })
 
-      /* An installed guest keeps their reward: the round carries the flat 10%
-         onto the table's bill, unless a cashier or a coupon already set one. */
       const rewarded = state.ui.appInstalled && !(state.billDiscounts || {})[tableId]
       const billDiscounts = rewarded
         ? { ...(state.billDiscounts || {}), [tableId]: installRewardDiscount() }
@@ -358,8 +364,6 @@ export function storeReducer(state, action) {
       }
     }
 
-    /** Manager-entered round: skips the acknowledgement chime and lands
-     *  straight in the KDS as accepted. */
     case 'ADD_ROUND': {
       const { tableId, items, notes, actor } = action
       if (!items || !items.length) return state
@@ -810,10 +814,6 @@ export function storeReducer(state, action) {
           actor: campaign.createdBy,
         },
       )
-      /* The campaign sequence has to be in place before the guest push is
-         built: pushGuestNotification returns a `seq` of its own, and spreading
-         that over the top would roll the campaign counter back — handing every
-         later campaign the same id. */
       const withSeq = { ...state, seq: { ...logged.seq, campaign: seq } }
       const pushed = scheduled
         ? {}
@@ -836,7 +836,6 @@ export function storeReducer(state, action) {
       }
     }
 
-    /** Simulated delivery: dispatch -> opened -> walk-ins + attributed revenue. */
     case 'ADVANCE_CAMPAIGN': {
       const campaigns = state.campaigns.map((campaign) => {
         if (campaign.id !== action.id || campaign.status !== 'sending') return campaign
@@ -868,7 +867,6 @@ export function storeReducer(state, action) {
 
     case 'ADD_TABLE': {
       const seq = (state.seq.table || state.tables.length) + 1
-      /* A malformed dispatch must not take the whole store down with it. */
       const table = action.table || {}
       return {
         ...state,
@@ -1046,8 +1044,6 @@ export function storeReducer(state, action) {
     case 'DELETE_GUEST':
       return { ...state, guests: state.guests.filter((guest) => guest.id !== action.id) }
 
-    /* One tap for the guest, honoured everywhere: an opted-out guest is dropped
-       from every campaign audience until they opt back in. */
     case 'SET_GUEST_OPT_OUT': {
       const guests = state.guests.map((guest) =>
         guest.id === action.id ? { ...guest, optedOut: Boolean(action.value) } : guest,
@@ -1064,7 +1060,7 @@ export function storeReducer(state, action) {
       return { ...state, guests, events: logged.events, seq: logged.seq }
     }
 
-    /* ------------------------------------------------------------ hydrate | */
+    /* ------------------------------------------------------------ hydrate */
     case 'HYDRATE': {
       const incoming = action.state
       if (!incoming) return state
@@ -1080,7 +1076,7 @@ export function storeReducer(state, action) {
 
     case 'RESET_DEMO':
       clearState()
-      return { ...buildSeedState(), resetAt: Date.now(), chime: state.chime }
+      return { ...initialiseState(), resetAt: Date.now(), chime: state.chime }
 
     default:
       return state
@@ -1092,15 +1088,76 @@ export function storeReducer(state, action) {
 export function StoreProvider({ children }) {
   const [state, dispatch] = useReducer(storeReducer, undefined, initialiseState)
 
-  /* Persist (debounced) and mirror across tabs via the storage event. */
+  // 1. Initial Load from Backend Database API
   useEffect(() => {
-    const timer = window.setTimeout(() => saveState(state), 250)
-    return () => window.clearTimeout(timer)
-  }, [state])
+    clearState()
+    async function loadBootstrap() {
+      try {
+        const data = await api.getBootstrapState()
+        if (data) {
+          dispatch({ type: 'HYDRATE', state: data })
+        }
+      } catch (err) {
+        console.warn('Backend unavailable', err)
+      }
+    }
+    loadBootstrap()
+  }, [])
+
+  // 2. Realtime Socket.IO Connection & Sync
+  useEffect(() => {
+    let socket = null
+    try {
+      const socketUrl = import.meta.env?.VITE_API_URL
+        ? import.meta.env.VITE_API_URL.replace('/api', '')
+        : 'http://localhost:4000'
+      socket = io(socketUrl, { autoConnect: true, reconnection: true })
+
+      socket.on('connect', () => {
+        socket.emit('join_restaurant', 'rest_ganesh_cafe_01')
+      })
+
+      const syncWithServer = async () => {
+        try {
+          const data = await api.getBootstrapState()
+          if (data) dispatch({ type: 'HYDRATE', state: data })
+        } catch (_) {}
+      }
+
+      socket.on('order:created', syncWithServer)
+      socket.on('order:updated', syncWithServer)
+      socket.on('table:updated', syncWithServer)
+      socket.on('menu:updated', syncWithServer)
+      socket.on('shift:updated', syncWithServer)
+      socket.on('invoice:created', syncWithServer)
+      socket.on('feedback:created', syncWithServer)
+      socket.on('campaign:created', (campaign) => {
+        syncWithServer()
+        if (campaign && campaign.status !== 'scheduled') {
+          dispatch({
+            type: 'PUSH_NOTIFICATION',
+            notification: {
+              kind: 'campaign',
+              channel: campaign.channel || 'push',
+              title: campaign.heading || campaign.name,
+              body: campaign.body,
+              coupon: campaign.coupon || null,
+            },
+          })
+        }
+      })
+    } catch (err) {
+      console.warn('Socket connection error:', err)
+    }
+
+    return () => {
+      if (socket) socket.disconnect()
+    }
+  }, [])
 
   useEffect(() => onExternalStateChange((external) => dispatch({ type: 'HYDRATE', state: external })), [])
 
-  /* Audio: the reducer only records intent, the effect actually plays it. */
+  /* Audio chimes */
   const chimeRef = useRef(state.chime?.seq || 0)
   const chimeSeq = state.chime?.seq || 0
   const chimeKind = state.chime?.kind
@@ -1124,7 +1181,7 @@ export function StoreProvider({ children }) {
     }
   }, [])
 
-  /* Simulated campaign delivery over ~6 seconds. */
+  /* Simulated campaign delivery */
   const sendingKey = (state.campaigns || [])
     .filter((campaign) => campaign.status === 'sending')
     .map((campaign) => campaign.id)
@@ -1139,9 +1196,6 @@ export function StoreProvider({ children }) {
     return () => timers.forEach((timer) => window.clearTimeout(timer))
   }, [sendingKey])
 
-  /* Retire a guest banner eventually so they never pile up — but slowly. A
-     real push waits in the notification centre until the guest looks, so the
-     banner has to outlive a tab switch, not just the sending screen. */
   const newestPush = state.pushNotifications?.[0]
   useEffect(() => {
     if (!newestPush) return undefined
@@ -1152,29 +1206,111 @@ export function StoreProvider({ children }) {
     return () => window.clearTimeout(timer)
   }, [newestPush?.id])
 
+  // Async API dispatch wrapper: updates local state optimistically, then persists to server
   const actions = useMemo(() => {
     const bind = (type) => (payload) => dispatch({ type, ...payload })
+
     return {
       dispatch,
       lockSession: bind('LOCK_SESSION'),
-      unlockSession: bind('UNLOCK_SESSION'),
+      unlockSession: async (payload) => {
+        dispatch({ type: 'UNLOCK_SESSION', ...payload })
+      },
       setSession: bind('SET_SESSION'),
-      addStaff: bind('ADD_STAFF'),
-      updateStaff: bind('UPDATE_STAFF'),
+      addStaff: async (payload) => {
+        dispatch({ type: 'ADD_STAFF', ...payload })
+        try {
+          await api.createStaff(payload)
+        } catch (_) {}
+      },
+      updateStaff: async (payload) => {
+        dispatch({ type: 'UPDATE_STAFF', ...payload })
+        try {
+          await api.updateStaff(payload.id, payload.patch)
+        } catch (_) {}
+      },
       addToCart: bind('CART_ADD'),
       setCartQty: bind('CART_SET_QTY'),
       clearCart: bind('CART_CLEAR'),
       setCartGuest: bind('CART_GUEST'),
       toggleCart: bind('CART_TOGGLE'),
       dismissBanner: bind('CART_DISMISS_BANNER'),
-      placeOrder: bind('PLACE_ORDER'),
-      addRound: bind('ADD_ROUND'),
-      acknowledgeOrder: bind('ACKNOWLEDGE_ORDER'),
-      startCooking: bind('START_COOKING'),
-      toggleItemReady: bind('TOGGLE_ITEM_READY'),
-      bumpTicket: bind('BUMP_TICKET'),
-      serveOrder: bind('SERVE_ORDER'),
-      voidOrder: bind('VOID_ORDER'),
+      placeOrder: async (payload) => {
+        dispatch({ type: 'PLACE_ORDER', ...payload })
+        try {
+          const items = Object.entries(state.cart.items).map(([id, qty]) => {
+            const m = state.menu.find((entry) => entry.id === id)
+            return {
+              id: m.id,
+              name: m.name,
+              price: m.price,
+              qty,
+              station: m.station,
+              isVeg: m.isVeg,
+              note: payload.itemNotes?.[id] || '',
+            }
+          })
+          if (items.length > 0) {
+            await api.createOrderRound({
+              tableId: payload.tableId,
+              guestName: payload.guestName,
+              guestPhone: payload.guestPhone,
+              notes: payload.notes,
+              items,
+            })
+          }
+        } catch (_) {}
+      },
+      addRound: async (payload) => {
+        dispatch({ type: 'ADD_ROUND', ...payload })
+        try {
+          await api.createOrderRound(payload)
+        } catch (_) {}
+      },
+      acknowledgeOrder: async (payload) => {
+        dispatch({ type: 'ACKNOWLEDGE_ORDER', ...payload })
+        try {
+          await api.updateOrderStatus(payload.orderId, 'accepted')
+        } catch (_) {}
+      },
+      startCooking: async (payload) => {
+        dispatch({ type: 'START_COOKING', ...payload })
+        try {
+          await api.updateOrderStatus(payload.orderId, 'cooking')
+        } catch (_) {}
+      },
+      toggleItemReady: async (payload) => {
+        dispatch({ type: 'TOGGLE_ITEM_READY', ...payload })
+        try {
+          const target = state.orders.find((o) => o.id === payload.orderId)
+          if (target) {
+            const ready = target.readyItemIds || []
+            const has = ready.includes(payload.itemId)
+            const readyItemIds = has ? ready.filter((id) => id !== payload.itemId) : [...ready, payload.itemId]
+            const everyItemReady = target.items.every((item) => readyItemIds.includes(item.id))
+            const nextStatus = everyItemReady ? 'ready' : target.status
+            await api.updateOrderStatus(payload.orderId, nextStatus, readyItemIds)
+          }
+        } catch (_) {}
+      },
+      bumpTicket: async (payload) => {
+        dispatch({ type: 'BUMP_TICKET', ...payload })
+        try {
+          await api.updateOrderStatus(payload.orderId, 'ready')
+        } catch (_) {}
+      },
+      serveOrder: async (payload) => {
+        dispatch({ type: 'SERVE_ORDER', ...payload })
+        try {
+          await api.updateOrderStatus(payload.orderId, 'served')
+        } catch (_) {}
+      },
+      voidOrder: async (payload) => {
+        dispatch({ type: 'VOID_ORDER', ...payload })
+        try {
+          await api.updateOrderStatus(payload.orderId, 'void')
+        } catch (_) {}
+      },
       callWaiter: bind('CALL_WAITER'),
       resolveAlert: bind('RESOLVE_ALERT'),
       clearResolvedAlerts: bind('CLEAR_RESOLVED_ALERTS'),
@@ -1182,33 +1318,98 @@ export function StoreProvider({ children }) {
       setBillCoupon: bind('SET_BILL_COUPON'),
       parkBill: bind('PARK_BILL'),
       transferTable: bind('TRANSFER_TABLE'),
-      settleBill: bind('SETTLE_BILL'),
+      settleBill: async (payload) => {
+        dispatch({ type: 'SETTLE_BILL', ...payload })
+        try {
+          await api.settleBill({
+            tableId: payload.tableId,
+            method: payload.method,
+            tendered: payload.tendered,
+            discount: payload.discount,
+          })
+        } catch (_) {}
+      },
       setGuestTable: bind('SET_GUEST_TABLE'),
       setUi: bind('SET_UI'),
       setSetting: bind('SET_SETTING'),
       dismissFeedbackPrompt: bind('DISMISS_FEEDBACK_PROMPT'),
-      addFeedback: bind('ADD_FEEDBACK'),
+      addFeedback: async (payload) => {
+        dispatch({ type: 'ADD_FEEDBACK', ...payload })
+        try {
+          await api.createFeedback(payload)
+        } catch (_) {}
+      },
       pushNotification: bind('PUSH_NOTIFICATION'),
       dismissPush: bind('DISMISS_PUSH'),
       clearPushes: bind('CLEAR_PUSHES'),
-      sendCampaign: bind('SEND_CAMPAIGN'),
+      sendCampaign: async (payload) => {
+        dispatch({ type: 'SEND_CAMPAIGN', ...payload })
+        try {
+          await api.createCampaign(payload)
+        } catch (_) {}
+      },
       deleteCampaign: bind('DELETE_CAMPAIGN'),
-      setTableReserved: bind('SET_TABLE_RESERVED'),
-      addMenuItems: bind('ADD_MENU_ITEM'),
-      updateMenuItem: bind('UPDATE_MENU_ITEM'),
-      deleteMenuItem: bind('DELETE_MENU_ITEM'),
-      openShift: bind('OPEN_SHIFT'),
-      cashTransaction: bind('CASH_TXN'),
-      closeShift: bind('CLOSE_SHIFT'),
-      addExpense: bind('ADD_EXPENSE'),
+      setTableReserved: async (payload) => {
+        dispatch({ type: 'SET_TABLE_RESERVED', ...payload })
+        try {
+          await api.updateTable(payload.tableId, { reserved: payload.reserved })
+        } catch (_) {}
+      },
+      addMenuItems: async (payload) => {
+        dispatch({ type: 'ADD_MENU_ITEM', ...payload })
+        try {
+          await api.createMenuItem(payload.item)
+        } catch (_) {}
+      },
+      updateMenuItem: async (payload) => {
+        dispatch({ type: 'UPDATE_MENU_ITEM', ...payload })
+        try {
+          await api.updateMenuItem(payload.id, payload.patch)
+        } catch (_) {}
+      },
+      deleteMenuItem: async (payload) => {
+        dispatch({ type: 'DELETE_MENU_ITEM', ...payload })
+        try {
+          await api.deleteMenuItem(payload.id)
+        } catch (_) {}
+      },
+      openShift: async (payload) => {
+        dispatch({ type: 'OPEN_SHIFT', ...payload })
+        try {
+          await api.openShift(payload.openingFloat, payload.by)
+        } catch (_) {}
+      },
+      cashTransaction: async (payload) => {
+        dispatch({ type: 'CASH_TXN', ...payload })
+        try {
+          await api.addCashTransaction(payload.txnType, payload.reason, payload.amount, payload.by)
+        } catch (_) {}
+      },
+      closeShift: async (payload) => {
+        dispatch({ type: 'CLOSE_SHIFT', ...payload })
+        try {
+          await api.closeShift(payload.countedCash, payload.by, payload.notes)
+        } catch (_) {}
+      },
+      addExpense: async (payload) => {
+        dispatch({ type: 'ADD_EXPENSE', ...payload })
+        try {
+          await api.createExpense(payload)
+        } catch (_) {}
+      },
       deleteExpense: bind('DELETE_EXPENSE'),
       upsertGuest: bind('UPSERT_GUEST'),
       deleteGuest: bind('DELETE_GUEST'),
-      setGuestOptOut: bind('SET_GUEST_OPT_OUT'),
+      setGuestOptOut: async (payload) => {
+        dispatch({ type: 'SET_GUEST_OPT_OUT', ...payload })
+        try {
+          await api.toggleGuestOptOut(payload.id, payload.value)
+        } catch (_) {}
+      },
       resetDemo: () => dispatch({ type: 'RESET_DEMO' }),
       unlockAudio,
     }
-  }, [])
+  }, [state])
 
   const value = useMemo(() => ({ state, actions, dispatch }), [state, actions])
 

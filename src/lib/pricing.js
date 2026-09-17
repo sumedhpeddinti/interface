@@ -1,7 +1,7 @@
 /* Single pricing engine for the whole platform.
    Menu prices are tax-exclusive. Discount -> CGST/SGST 2.5% each -> Total. */
 
-import { num, round2 } from './format'
+import { num, round2 } from './format.js'
 
 export const GST_RATE = 0.05
 export const CGST_RATE = 0.025

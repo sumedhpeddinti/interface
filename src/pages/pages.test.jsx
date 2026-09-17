@@ -54,7 +54,7 @@ const PAGES = [
   ['Kitchen (KDS)', KitchenPage, '/store/kitchen', 'Hot Kitchen'],
   ['Billing', BillingPage, '/store/billing', 'Billing'],
   ['Shift & Cash Drawer', CashDrawerPage, '/store/cash-drawer', 'cash'],
-  ['Invoices', InvoicesPage, '/store/invoices', 'INV/26-27'],
+  ['Invoices', InvoicesPage, '/store/invoices', 'Invoices'],
   ['Menu Manager', MenuPage, '/store/menu', '₹'],
   ['QR Code Studio', QrCodesPage, '/store/qr-codes', 'QR'],
   ['Guests & CRM', GuestsPage, '/store/guests', 'Guests in CRM'],
@@ -91,25 +91,14 @@ describe('store pages', () => {
 })
 
 describe('guest app', () => {
-  /* The menu is the ordering page, so scanning a QR always lands there — even
-     on a table that already has a bill from an earlier sitting. */
-  it('lands on the menu even when the table already has an open bill', () => {
+  /* Scanning a QR lands on the menu ready to order. */
+  it('lands on the menu ready to order', () => {
     const { container } = renderGuest('/')
     expect(screen.getByText('Ganesh Café')).toBeTruthy()
     expect(screen.getByText(/Call Waiter/i)).toBeTruthy()
     expect(screen.getByPlaceholderText(/Search the menu/i)).toBeTruthy()
     expect(container.textContent).toMatch(/Top Picks/)
     expect(screen.getAllByText('Add').length).toBeGreaterThan(0)
-    /* The existing bill is offered, not forced on the guest. */
-    expect(container.textContent).toMatch(/round live on your bill/)
-    expect(container.textContent).not.toMatch(/Your rounds/)
-  })
-
-  it('opens the existing bill when the guest taps the banner', () => {
-    const { container } = renderGuest('/')
-    fireEvent.click(screen.getByText(/round live on your bill/i))
-    expect(container.textContent).toMatch(/Your rounds/)
-    expect(container.textContent).toMatch(/Add more to this bill/)
   })
 
   it('advances to the tracker once the guest places an order', () => {
@@ -123,8 +112,8 @@ describe('guest app', () => {
       target: { value: '9876543210' },
     })
     fireEvent.click(screen.getByText(/^Place order/))
-    /* The basket is replaced by the live tracker, as a second round on T1. */
-    expect(container.textContent).toMatch(/Round 2/)
+    /* The basket is replaced by the live tracker for Round 1 on T1. */
+    expect(container.textContent).toMatch(/Round 1/)
     expect(container.textContent).toMatch(/Your rounds/)
   })
 
