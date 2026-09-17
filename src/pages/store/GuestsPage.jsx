@@ -66,17 +66,16 @@ export default function GuestsPage() {
     const q = query.trim().toLowerCase()
     return base
       .filter((guest) =>
-        q ? guest.name.toLowerCase().includes(q) || String(guest.phone).includes(q) : true,
+        q ? guest.name.toLowerCase().includes(q) : true,
       )
-      .sort((a, b) => b.totalSpend - a.totalSpend)
+      .sort((a, b) => b.visits - a.visits || b.lastVisit - a.lastVisit)
   }, [state.guests, segment, query, now])
 
   const selected = state.guests.find((guest) => guest.id === selectedId) || null
   const history = selected
     ? state.invoices.filter(
         (invoice) =>
-          String(invoice.guestPhone || '').replace(/\D/g, '') ===
-          String(selected.phone).replace(/\D/g, ''),
+          invoice.guestName && invoice.guestName.toLowerCase() === selected.name.toLowerCase(),
       )
     : []
 
@@ -183,11 +182,10 @@ export default function GuestsPage() {
       />
 
       <KPIGrid
-        columns={4}
+        columns={3}
         items={[
-          { label: 'Guests in CRM', value: stats.total, hint: `${stats.active} active in 30 days`, icon: Users, tone: 'indigo' },
+          { label: 'Guests in CRM', value: stats.total, hint: `${stats.active} active recently`, icon: Users, tone: 'indigo' },
           { label: 'Inactive 30+ days', value: stats.inactive, hint: 'win-back opportunity', icon: UserRound, tone: 'rose' },
-          { label: 'Lifetime value', value: money(stats.ltv), hint: `${money(stats.avgSpend)} average`, icon: Crown, tone: 'emerald' },
           { label: 'Average visits', value: stats.avgVisits, hint: 'per guest record', icon: Users, tone: 'zinc' },
         ]}
       />
@@ -204,7 +202,7 @@ export default function GuestsPage() {
         <SearchInput
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search name or phone"
+          placeholder="Search guest name"
           className="w-full sm:w-64"
         />
       </div>
@@ -223,9 +221,7 @@ export default function GuestsPage() {
                 <TR>
                   <TH>Guest</TH>
                   <TH>Channel / Source</TH>
-                  <TH>Phone</TH>
                   <TH align="right">Visits</TH>
-                  <TH align="right">Lifetime value</TH>
                   <TH>Favourite dish</TH>
                   <TH>Last visit</TH>
                   <TH align="center">Diet</TH>
@@ -243,7 +239,7 @@ export default function GuestsPage() {
                         <div className="min-w-0">
                           <span className="block text-xs font-medium text-zinc-900">{guest.name}</span>
                         </div>
-                        {guest.totalSpend >= 8000 ? (
+                        {guest.visits >= 8 ? (
                           <Badge tone="amber" size="sm">
                             VIP
                           </Badge>
@@ -268,14 +264,8 @@ export default function GuestsPage() {
                         </Badge>
                       )}
                     </TD>
-                    <TD mono muted>
-                      {guest.phone || '—'}
-                    </TD>
                     <TD align="right" mono>
                       {guest.visits}
-                    </TD>
-                    <TD align="right" mono className="font-semibold">
-                      {money(guest.totalSpend)}
                     </TD>
                     <TD muted>{guest.favoriteDish || '—'}</TD>
                     <TD>
@@ -326,7 +316,7 @@ export default function GuestsPage() {
         open={Boolean(selected)}
         onClose={() => setSelectedId(null)}
         title={selected?.name || ''}
-        subtitle={selected ? `${selected.phone} · joined ${relativeDay(selected.joinedAt, now)}` : ''}
+        subtitle={selected ? `Joined ${relativeDay(selected.joinedAt, now)}` : ''}
         footer={
           selected ? (
             <div className="flex gap-2">
@@ -366,7 +356,7 @@ export default function GuestsPage() {
                   QR Scanner User
                 </Badge>
               )}
-              {selected.totalSpend >= 8000 ? (
+              {selected.visits >= 8 ? (
                 <Badge tone="amber" size="md">
                   VIP
                 </Badge>
@@ -449,13 +439,7 @@ export default function GuestsPage() {
             </div>
 
             <div className="rounded-md border border-zinc-200 p-3">
-              <DataRow label="Lifetime value" value={money(selected.totalSpend)} />
-              <DataRow
-                label="Average spend"
-                value={money(selected.visits ? selected.totalSpend / selected.visits : 0)}
-                className="mt-2"
-              />
-              <DataRow label="Favourite dish" value={selected.favoriteDish || '—'} mono={false} className="mt-2" />
+              <DataRow label="Favourite dish" value={selected.favoriteDish || '—'} mono={false} />
               <DataRow label="Last visit" value={dateTimeLabel(selected.lastVisit)} className="mt-2" />
               <DataRow label="First seen" value={relativeDay(selected.joinedAt, now)} mono={false} className="mt-2" />
               <DataRow label="Acquisition source" value={selected.source === 'app' ? 'Mobile App Install' : 'Table QR Menu Scanner'} mono={false} className="mt-2" />
@@ -467,7 +451,7 @@ export default function GuestsPage() {
               </p>
               {history.length === 0 ? (
                 <p className="mt-2 text-[11px] text-zinc-500">
-                  No settled invoices recorded for this phone number yet.
+                  No settled invoices recorded for this guest yet.
                 </p>
               ) : (
                 <ul className="mt-2 divide-y divide-zinc-200 rounded-md border border-zinc-200">
@@ -499,8 +483,8 @@ export default function GuestsPage() {
                 {state.orders
                   .filter(
                     (order) =>
-                      String(order.guestPhone || '').replace(/\D/g, '') ===
-                        String(selected.phone).replace(/\D/g, '') &&
+                      order.guestName &&
+                      order.guestName.toLowerCase() === selected.name.toLowerCase() &&
                       order.status !== 'paid' &&
                       order.status !== 'void',
                   )
@@ -519,8 +503,8 @@ export default function GuestsPage() {
                   ))}
                 {state.orders.filter(
                   (order) =>
-                    String(order.guestPhone || '').replace(/\D/g, '') ===
-                      String(selected.phone).replace(/\D/g, '') &&
+                    order.guestName &&
+                    order.guestName.toLowerCase() === selected.name.toLowerCase() &&
                     order.status !== 'paid' &&
                     order.status !== 'void',
                 ).length === 0 ? (
@@ -580,7 +564,7 @@ function QuickNotifyModal({ open, onClose, target, draft, onChange, onSubmit, se
       open={open}
       onClose={onClose}
       title={`Send Notification to ${target.name}`}
-      subtitle={`Deliver an instant push notification & offer banner to ${target.phone || target.name}.`}
+      subtitle={`Deliver an instant push notification & offer banner to ${target.name}.`}
       icon={Send}
       size="md"
       footer={
@@ -602,8 +586,6 @@ function QuickNotifyModal({ open, onClose, target, draft, onChange, onSubmit, se
       <div className="space-y-3.5">
         <div className="flex items-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 p-2.5 text-xs text-zinc-700">
           <span className="font-semibold text-zinc-900">{target.name}</span>
-          <span className="text-zinc-400">•</span>
-          <span className="tnum text-zinc-600">{target.phone}</span>
           <span className="text-zinc-400">•</span>
           <Badge tone={target.source === 'app' ? 'emerald' : 'indigo'} size="sm">
             {target.source === 'app' ? 'App Installed' : 'QR Menu Scanner'}
