@@ -31,6 +31,7 @@ import { ROUND_STATUS, canTransition, isActive } from '../lib/orders.js'
 import { round2 } from '../lib/format.js'
 import { cashDrawerSummary, openRoundsOfTable, tableBill, varianceOf } from '../lib/selectors.js'
 import { api } from '../lib/api/index.js'
+import { showSystemNotification } from '../lib/notifications.js'
 
 const MAX_EVENTS = 60
 const MAX_ALERTS = 30
@@ -1110,7 +1111,7 @@ export function StoreProvider({ children }) {
     try {
       const socketUrl = import.meta.env?.VITE_API_URL
         ? import.meta.env.VITE_API_URL.replace('/api', '')
-        : 'http://localhost:4000'
+        : (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:4000')
       socket = io(socketUrl, { autoConnect: true, reconnection: true })
 
       socket.on('connect', () => {
@@ -1134,6 +1135,13 @@ export function StoreProvider({ children }) {
       socket.on('campaign:created', (campaign) => {
         syncWithServer()
         if (campaign && campaign.status !== 'scheduled') {
+          showSystemNotification({
+            title: campaign.heading || campaign.name || 'Ganesh Café',
+            body: campaign.body || '',
+            coupon: campaign.coupon || null,
+            kind: 'campaign',
+            id: campaign.id,
+          })
           dispatch({
             type: 'PUSH_NOTIFICATION',
             notification: {

@@ -5,9 +5,8 @@ let io = null
 export function initRealtime(server, corsOrigin) {
   io = new Server(server, {
     cors: {
-      origin: corsOrigin,
+      origin: corsOrigin || '*',
       methods: ['GET', 'POST'],
-      credentials: true,
     },
   })
 
