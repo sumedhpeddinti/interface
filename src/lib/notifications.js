@@ -55,23 +55,47 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray
 }
 
+export async function getActiveServiceWorkerRegistration() {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return null
+  try {
+    let reg = await navigator.serviceWorker.getRegistration()
+    if (!reg) {
+      reg = await navigator.serviceWorker.register(WORKER_URL, { scope: '/' })
+    }
+    if (reg.installing || reg.waiting) {
+      const worker = reg.installing || reg.waiting
+      await new Promise((resolve) => {
+        if (worker.state === 'activated') return resolve()
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'activated') resolve()
+        })
+        setTimeout(resolve, 800)
+      })
+    }
+    const readyReg = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((res) => setTimeout(() => res(reg), 800)),
+    ])
+    return readyReg || reg
+  } catch (err) {
+    console.warn('Service worker registration lookup error:', err)
+    return null
+  }
+}
+
 export async function syncPushSubscription() {
   if (typeof window === 'undefined' || typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return null
   if (window.Notification?.permission !== 'granted') return null
 
   try {
-    let registration = await navigator.serviceWorker.getRegistration()
-    if (!registration && navigator.serviceWorker.ready) {
-      registration = await navigator.serviceWorker.ready
-    }
-    if (!registration) {
-      registration = await navigator.serviceWorker.register(WORKER_URL, { scope: '/' })
-    }
+    const registration = await getActiveServiceWorkerRegistration()
     if (!registration || !registration.pushManager) return null
 
     let subscription = await registration.pushManager.getSubscription()
     if (!subscription) {
-      const vapidRes = await fetch('/api/push/vapid-key').then((r) => r.json()).catch(() => null)
+      const apiBase = import.meta.env?.VITE_API_URL || '/api'
+      const vapidUrl = `${apiBase.replace(/\/$/, '')}/push/vapid-key`
+      const vapidRes = await fetch(vapidUrl).then((r) => r.json()).catch(() => null)
       const vapidKey = vapidRes?.data?.publicKey
       if (vapidKey) {
         subscription = await registration.pushManager.subscribe({
@@ -82,7 +106,9 @@ export async function syncPushSubscription() {
     }
 
     if (subscription) {
-      await fetch('/api/push/subscribe', {
+      const apiBase = import.meta.env?.VITE_API_URL || '/api'
+      const subUrl = `${apiBase.replace(/\/$/, '')}/push/subscribe`
+      await fetch(subUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subscription: subscription.toJSON() }),
@@ -159,28 +185,24 @@ export async function showSystemNotification({
 
   /* `renotify` is only legal alongside a tag — Chrome throws without one. */
   if (tag || id) {
-    options.tag = tag || id
+    options.tag = String(tag || id)
     options.renotify = true
   }
 
+  // 1. Primary path: Service Worker Registration (Required on Android Chrome)
   if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
     try {
-      let registration = await navigator.serviceWorker.getRegistration()
-      if (!registration && navigator.serviceWorker.ready) {
-        registration = await navigator.serviceWorker.ready
-      }
-      if (!registration) {
-        registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
-      }
+      const registration = await getActiveServiceWorkerRegistration()
       if (registration && typeof registration.showNotification === 'function') {
         await registration.showNotification(title, options)
         return { shown: true, via: 'service-worker' }
       }
     } catch (err) {
-      console.warn('Service worker notification error:', err)
+      console.warn('Service worker showNotification error:', err)
     }
   }
 
+  // 2. Desktop fallback
   try {
     if (typeof window !== 'undefined' && window.Notification) {
       new window.Notification(title, options) // eslint-disable-line no-new

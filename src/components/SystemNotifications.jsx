@@ -8,6 +8,7 @@ import {
   registerNotificationWorker,
   requestNotificationPermission,
   showSystemNotification,
+  syncPushSubscription,
 } from '../lib/notifications'
 
 /* Turns the store's push feed into real operating-system notifications.
@@ -28,6 +29,7 @@ export function NotificationBridge() {
 
   useEffect(() => {
     registerNotificationWorker()
+    syncPushSubscription()
   }, [])
 
   useEffect(() => {
