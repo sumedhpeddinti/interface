@@ -1,0 +1,35 @@
+{
+  "id": "/",
+  "name": "Ganesh Café — Restaurant Operating Platform",
+  "short_name": "Ganesh Café",
+  "description": "Guest QR ordering, kitchen display, billing and back-of-house for Ganesh Café.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#f9fafb",
+  "theme_color": "#18181b",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["food", "shopping", "business"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   MedusaJS design language — tokens.
+   Utilitarian, flat, hairline-bordered. No gradients, no glass, no glow.
+   --------------------------------------------------------------------------- */
+@theme {
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-mono:
+    ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-zinc-50);
+    color: var(--color-zinc-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background-color: var(--color-zinc-900);
+    color: #fff;
+  }
+}
+
+/* Monospaced figures for money, hashes, timers and counts. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Thin, quiet scrollbars that suit a dense dashboard. */
+.hairline-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-zinc-300) transparent;
+}
+.hairline-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.hairline-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--color-zinc-200);
+  border-radius: 9999px;
+}
+.hairline-scroll::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   Print — thermal invoice (80mm) and the A4 QR card sheet.
+   Any subtree with id="print-area" is isolated onto the page.
+   --------------------------------------------------------------------------- */
+@media print {
+  @page {
+    margin: 8mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  body:has(#print-area) * {
+    visibility: hidden !important;
+  }
+
+  body:has(#print-area) #print-area,
+  body:has(#print-area) #print-area * {
+    visibility: visible !important;
+  }
+
+  body:has(#print-area) #print-area {
+    position: absolute !important;
+    left: 0;
+    top: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-break-avoid {
+    break-inside: avoid;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
