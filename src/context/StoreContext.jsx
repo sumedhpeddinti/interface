@@ -53,7 +53,7 @@ function initialiseState() {
     ...base,
     orders: [],
     invoices: [],
-    guests: [],
+    guests: base.guests,
     expenses: [],
     campaigns: [],
     feedback: [],
@@ -119,12 +119,12 @@ function upsertGuest(state, patch) {
   )
   if (index === -1) {
     if (!key && !patch.name) return { guests, guest: null }
-    const seq = (state.seq.guest || 0) + 1
+    const seq = Math.max(state.seq?.guest || 0, guests.length) + 1
     const guest = {
       id: `g${pad(seq, 2)}`,
       name: patch.name || 'Guest',
       phone: patch.phone || '',
-      visits: patch.visits || 0,
+      visits: patch.visits || 1,
       totalSpend: round2(patch.spend || 0),
       favoriteDish: patch.favoriteDish || '',
       vegOnly: patch.vegOnly ?? true,
@@ -140,14 +140,16 @@ function upsertGuest(state, patch) {
     ...existing,
     name: patch.name || existing.name,
     phone: patch.phone || existing.phone,
-    visits: existing.visits + (patch.visits || 0),
+    visits: existing.visits + (patch.visits || 1),
     totalSpend: round2(existing.totalSpend + (patch.spend || 0)),
-    lastVisit: patch.at || existing.lastVisit,
+    lastVisit: patch.at || Date.now(),
     favoriteDish: patch.favoriteDish || existing.favoriteDish,
     vegOnly: patch.vegOnly ?? existing.vegOnly,
+    source: existing.source || patch.source || 'qr',
   }
   const copy = [...guests]
-  copy[index] = next
+  copy.splice(index, 1)
+  copy.unshift(next)
   return { guests: copy, guest: next }
 }
 
@@ -370,12 +372,14 @@ export function storeReducer(state, action) {
       if (!items || !items.length) return state
       const orderSeq = (state.seq.order || 0) + 1
       const existing = openRoundsOfTable(state.orders, tableId)
+      const guestName = action.guestName || existing[0]?.guestName || 'Walk-in'
+      const guestPhone = action.guestPhone || existing[0]?.guestPhone || ''
       const order = {
         id: `ORD-${orderSeq}`,
         tableId,
         round: existing.length + 1,
-        guestName: action.guestName || existing[0]?.guestName || 'Walk-in',
-        guestPhone: action.guestPhone || existing[0]?.guestPhone || '',
+        guestName,
+        guestPhone,
         notes: notes || '',
         status: ROUND_STATUS.ACCEPTED,
         createdAt: Date.now(),
@@ -388,9 +392,16 @@ export function storeReducer(state, action) {
         enteredBy: actor || 'Counter',
         items,
       }
+      const guestPatch = upsertGuest(state, {
+        name: guestName !== 'Walk-in' ? guestName : '',
+        phone: guestPhone,
+        at: Date.now(),
+        vegOnly: items.every((item) => item.isVeg),
+        source: 'qr',
+      })
       const summary = items.map((item) => `${item.qty}× ${item.name}`).join(', ')
       const logged = logEvent(
-        { ...state, orders: [...state.orders, order] },
+        { ...state, orders: [...state.orders, order], guests: guestPatch.guests },
         {
           type: 'order',
           message: `Round ${order.round} added to ${tableId} from the counter — ${summary}`,
@@ -400,7 +411,8 @@ export function storeReducer(state, action) {
       return {
         ...state,
         orders: [...state.orders, order],
-        seq: { ...logged.seq, order: orderSeq },
+        guests: guestPatch.guests,
+        seq: { ...logged.seq, order: orderSeq, ...(guestPatch.seq ? { guest: guestPatch.seq.guest } : {}) },
         events: logged.events,
       }
     }
@@ -1065,9 +1077,14 @@ export function storeReducer(state, action) {
     case 'HYDRATE': {
       const incoming = action.state
       if (!incoming) return state
+      const incomingGuests =
+        incoming.guests && incoming.guests.length > 0
+          ? incoming.guests
+          : (state.guests && state.guests.length > 0 ? state.guests : buildSeedState().guests)
       return {
         ...state,
         ...incoming,
+        guests: incomingGuests,
         chime: state.chime,
         ui: { ...state.ui, ...(incoming.ui || {}) },
         cart: { ...state.cart, ...(incoming.cart || {}), open: state.cart.open },

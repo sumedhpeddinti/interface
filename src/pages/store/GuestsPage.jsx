@@ -4,7 +4,11 @@ import {
   BellOff,
   Crown,
   Leaf,
+  QrCode,
   Search,
+  Send,
+  Smartphone,
+  Sparkles,
   Trash2,
   UserPlus,
   UserRound,
@@ -28,6 +32,7 @@ import {
   TableWrap,
   TBody,
   TD,
+  Textarea,
   TH,
   THead,
   TR,
@@ -37,6 +42,7 @@ import { useNow } from '../../lib/ticker'
 import { SEGMENTS } from '../../lib/orders'
 import { guestStats, optedOutCount, segmentGuests, segmentSize } from '../../lib/selectors'
 import { dateTimeLabel, duration, initials, money, relativeDay } from '../../lib/format'
+import { showSystemNotification } from '../../lib/notifications'
 
 export default function GuestsPage() {
   const { state, actions } = useStore()
@@ -47,6 +53,9 @@ export default function GuestsPage() {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [addOpen, setAddOpen] = useState(false)
   const [draft, setDraft] = useState({ name: '', phone: '' })
+  const [notifyTarget, setNotifyTarget] = useState(null)
+  const [notifyDraft, setNotifyDraft] = useState({ title: '', body: '', coupon: '' })
+  const [notifySentSuccess, setNotifySentSuccess] = useState(false)
 
   const staff = (state.staff || []).find((member) => member.id === state.session.staffId)
   const stats = guestStats(state, now)
@@ -71,11 +80,69 @@ export default function GuestsPage() {
       )
     : []
 
+  function openNotifyModal(guest) {
+    setNotifyTarget(guest)
+    setNotifySentSuccess(false)
+    setNotifyDraft({
+      title: `Special treat for you, ${guest.name.split(' ')[0]}! 🎉`,
+      body: `Enjoy 20% off on your favorite ${guest.favoriteDish || 'delicacies'} at Ganesh Café!`,
+      coupon: 'FEAST20',
+    })
+  }
+
+  function handleSendQuickNotification() {
+    if (!notifyDraft.title.trim()) return
+
+    // 1. Dispatch in-app push notification
+    actions.pushNotification({
+      notification: {
+        kind: 'campaign',
+        channel: notifyTarget?.source === 'app' ? 'push' : 'whatsapp',
+        title: notifyDraft.title,
+        body: notifyDraft.body,
+        coupon: notifyDraft.coupon || null,
+      },
+    })
+
+    // 2. Trigger real OS/browser notification
+    showSystemNotification({
+      title: notifyDraft.title,
+      body: notifyDraft.body,
+      coupon: notifyDraft.coupon || null,
+      kind: 'campaign',
+    })
+
+    // 3. Log event
+    actions.dispatch({
+      type: 'SEND_CAMPAIGN',
+      name: `Direct Alert · ${notifyTarget?.name}`,
+      heading: notifyDraft.title,
+      body: notifyDraft.body,
+      coupon: notifyDraft.coupon,
+      channel: notifyTarget?.source === 'app' ? 'push' : 'whatsapp',
+      audience: 'custom',
+      audienceLabel: notifyTarget?.name || 'Guest',
+      audienceSize: 1,
+      sent: 1,
+      opened: 1,
+      walkIns: 0,
+      revenue: 0,
+      status: 'completed',
+      createdBy: staff?.name || 'Manager',
+    })
+
+    setNotifySentSuccess(true)
+    setTimeout(() => {
+      setNotifyTarget(null)
+      setNotifySentSuccess(false)
+    }, 1200)
+  }
+
   return (
     <div className="space-y-5">
       <PageHeader
         title="Guests & CRM"
-        description="Every guest captured from a table QR order or the register. Segments drive the campaign console."
+        description="Every guest captured from table QR menu scanner orders, app installs, or counter billing. Reach them with instant notifications and offers."
         badge={
           <div className="flex items-center gap-2">
             <Badge tone="indigo" size="md" mono>
@@ -89,17 +156,29 @@ export default function GuestsPage() {
           </div>
         }
         actions={
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => {
-              setDraft({ name: '', phone: '' })
-              setAddOpen(true)
-            }}
-          >
-            <UserPlus size={13} strokeWidth={2} />
-            Add guest
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                actions.setUi({ patch: { guestSegment: segment } })
+              }}
+            >
+              <Send size={13} strokeWidth={2} />
+              Broadcast to segment
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => {
+                setDraft({ name: '', phone: '' })
+                setAddOpen(true)
+              }}
+            >
+              <UserPlus size={13} strokeWidth={2} />
+              Add guest
+            </Button>
+          </div>
         }
       />
 
@@ -143,13 +222,14 @@ export default function GuestsPage() {
               <THead>
                 <TR>
                   <TH>Guest</TH>
+                  <TH>Channel / Source</TH>
                   <TH>Phone</TH>
                   <TH align="right">Visits</TH>
                   <TH align="right">Lifetime value</TH>
                   <TH>Favourite dish</TH>
                   <TH>Last visit</TH>
-                  <TH align="center">Prefs</TH>
-                  <TH align="right" />
+                  <TH align="center">Diet</TH>
+                  <TH align="right">Actions</TH>
                 </TR>
               </THead>
               <TBody>
@@ -160,7 +240,9 @@ export default function GuestsPage() {
                         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-[10px] font-semibold text-white">
                           {initials(guest.name)}
                         </span>
-                        <span className="text-xs font-medium text-zinc-900">{guest.name}</span>
+                        <div className="min-w-0">
+                          <span className="block text-xs font-medium text-zinc-900">{guest.name}</span>
+                        </div>
                         {guest.totalSpend >= 8000 ? (
                           <Badge tone="amber" size="sm">
                             VIP
@@ -172,6 +254,19 @@ export default function GuestsPage() {
                           </Badge>
                         ) : null}
                       </div>
+                    </TD>
+                    <TD>
+                      {guest.source === 'app' ? (
+                        <Badge tone="emerald" size="sm">
+                          <Smartphone size={11} className="mr-1 inline text-emerald-600" />
+                          App Installed
+                        </Badge>
+                      ) : (
+                        <Badge tone="indigo" size="sm">
+                          <QrCode size={11} className="mr-1 inline text-indigo-600" />
+                          QR Menu Scanner
+                        </Badge>
+                      )}
                     </TD>
                     <TD mono muted>
                       {guest.phone || '—'}
@@ -201,15 +296,23 @@ export default function GuestsPage() {
                       )}
                     </TD>
                     <TD align="right">
-                      <IconButton
-                        icon={Trash2}
-                        label={`Remove ${guest.name}`}
-                        variant="secondary"
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          setDeleteTarget(guest)
-                        }}
-                      />
+                      <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="xs"
+                          variant="secondary"
+                          onClick={() => openNotifyModal(guest)}
+                          disabled={guest.optedOut}
+                        >
+                          <Send size={11} strokeWidth={2} />
+                          Send Offer
+                        </Button>
+                        <IconButton
+                          icon={Trash2}
+                          label={`Remove ${guest.name}`}
+                          variant="ghost"
+                          onClick={() => setDeleteTarget(guest)}
+                        />
+                      </div>
                     </TD>
                   </TR>
                 ))}
@@ -235,11 +338,12 @@ export default function GuestsPage() {
                 variant="primary"
                 block
                 onClick={() => {
-                  actions.setUi({ patch: { guestSegment: selected.vegOnly ? 'veg' : 'all' } })
+                  openNotifyModal(selected)
                   setSelectedId(null)
                 }}
               >
-                Use in campaign
+                <Send size={13} strokeWidth={2} />
+                Send Notification / Offer
               </Button>
             </div>
           ) : null
@@ -251,6 +355,17 @@ export default function GuestsPage() {
               <Badge tone="indigo" size="md">
                 {selected.visits} visits
               </Badge>
+              {selected.source === 'app' ? (
+                <Badge tone="emerald" size="md">
+                  <Smartphone size={12} className="mr-1 inline text-emerald-600" />
+                  App Installed
+                </Badge>
+              ) : (
+                <Badge tone="indigo" size="md">
+                  <QrCode size={12} className="mr-1 inline text-indigo-600" />
+                  QR Scanner User
+                </Badge>
+              )}
               {selected.totalSpend >= 8000 ? (
                 <Badge tone="amber" size="md">
                   VIP
@@ -275,6 +390,31 @@ export default function GuestsPage() {
                   Marketing on
                 </Badge>
               )}
+            </div>
+
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-3.5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-emerald-900">
+                    <Sparkles size={13} className="text-emerald-600" />
+                    Instant Notification & Offer
+                  </p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-emerald-700">
+                    Send a direct discount or food alert to {selected.name}&apos;s device immediately.
+                  </p>
+                </div>
+                <Button
+                  size="xs"
+                  variant="primary"
+                  onClick={() => {
+                    openNotifyModal(selected)
+                  }}
+                  disabled={selected.optedOut}
+                >
+                  <Send size={11} strokeWidth={2} />
+                  Send Offer
+                </Button>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-zinc-200 bg-zinc-50/70 px-3 py-2.5">
@@ -318,7 +458,7 @@ export default function GuestsPage() {
               <DataRow label="Favourite dish" value={selected.favoriteDish || '—'} mono={false} className="mt-2" />
               <DataRow label="Last visit" value={dateTimeLabel(selected.lastVisit)} className="mt-2" />
               <DataRow label="First seen" value={relativeDay(selected.joinedAt, now)} mono={false} className="mt-2" />
-              <DataRow label="Source" value={selected.source === 'qr' ? 'Table QR' : 'Register'} mono={false} className="mt-2" />
+              <DataRow label="Acquisition source" value={selected.source === 'app' ? 'Mobile App Install' : 'Table QR Menu Scanner'} mono={false} className="mt-2" />
             </div>
 
             <div>
@@ -417,7 +557,86 @@ export default function GuestsPage() {
           setAddOpen(false)
         }}
       />
+
+      <QuickNotifyModal
+        open={Boolean(notifyTarget)}
+        onClose={() => setNotifyTarget(null)}
+        target={notifyTarget}
+        draft={notifyDraft}
+        onChange={setNotifyDraft}
+        onSubmit={handleSendQuickNotification}
+        sentSuccess={notifySentSuccess}
+      />
     </div>
+  )
+}
+
+function QuickNotifyModal({ open, onClose, target, draft, onChange, onSubmit, sentSuccess }) {
+  if (!target) return null
+  const valid = Boolean(draft.title.trim())
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={`Send Notification to ${target.name}`}
+      subtitle={`Deliver an instant push notification & offer banner to ${target.phone || target.name}.`}
+      icon={Send}
+      size="md"
+      footer={
+        <>
+          <Button variant="secondary" size="sm" onClick={onClose} disabled={sentSuccess}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={!valid || sentSuccess}
+            onClick={onSubmit}
+          >
+            {sentSuccess ? '✓ Notification Delivered!' : 'Send Notification Now'}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-3.5">
+        <div className="flex items-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 p-2.5 text-xs text-zinc-700">
+          <span className="font-semibold text-zinc-900">{target.name}</span>
+          <span className="text-zinc-400">•</span>
+          <span className="tnum text-zinc-600">{target.phone}</span>
+          <span className="text-zinc-400">•</span>
+          <Badge tone={target.source === 'app' ? 'emerald' : 'indigo'} size="sm">
+            {target.source === 'app' ? 'App Installed' : 'QR Menu Scanner'}
+          </Badge>
+        </div>
+
+        <Field label="Notification Title / Heading" required>
+          <Input
+            value={draft.title}
+            onChange={(event) => onChange({ ...draft, title: event.target.value })}
+            placeholder="e.g. Biryani Fest is on 🎉"
+            autoFocus
+          />
+        </Field>
+
+        <Field label="Message Body" required>
+          <Textarea
+            rows={3}
+            value={draft.body}
+            onChange={(event) => onChange({ ...draft, body: event.target.value })}
+            placeholder="Enter the push notification text..."
+          />
+        </Field>
+
+        <Field label="Coupon Code (Optional)" hint="Carried onto their bill automatically if applied.">
+          <Input
+            value={draft.coupon}
+            onChange={(event) => onChange({ ...draft, coupon: event.target.value.toUpperCase() })}
+            placeholder="e.g. FEAST20"
+          />
+        </Field>
+      </div>
+    </Modal>
   )
 }
 

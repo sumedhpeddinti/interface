@@ -277,6 +277,10 @@ export function guestStats(state, now = Date.now()) {
 export function segmentGuests(guests, segmentId, now = Date.now()) {
   const list = guests || []
   switch (segmentId) {
+    case 'app':
+      return list.filter((guest) => guest.source === 'app')
+    case 'qr':
+      return list.filter((guest) => guest.source === 'qr' || !guest.source)
     case 'inactive':
       return list.filter((guest) => now - guest.lastVisit > 30 * 86_400_000)
     case 'vip':

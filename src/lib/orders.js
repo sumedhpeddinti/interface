@@ -133,8 +133,10 @@ export function canAccess(role, area) {
 
 export const SEGMENTS = [
   { id: 'all', label: 'All Guests', description: 'Everyone in the guest book' },
-  { id: 'inactive', label: 'Inactive (30+ Days)', description: 'No visit in the last 30 days' },
+  { id: 'app', label: 'App Users', description: 'Guests who installed our app & get push notifications' },
+  { id: 'qr', label: 'QR Scanner', description: 'Guests ordered via table QR menu scanner' },
   { id: 'vip', label: 'Top Spenders (VIP)', description: 'Lifetime value above ₹8,000' },
-  { id: 'veg', label: 'Veggie Only', description: 'Never ordered a non-veg dish' },
   { id: 'regulars', label: 'Regulars', description: 'Four or more visits' },
+  { id: 'veg', label: 'Veggie Only', description: 'Never ordered a non-veg dish' },
+  { id: 'inactive', label: 'Inactive (30+ Days)', description: 'No visit in the last 30 days' },
 ]

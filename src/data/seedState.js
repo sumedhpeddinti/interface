@@ -405,7 +405,7 @@ export function buildSeedState(now = Date.now()) {
     optedOut: Boolean(guest.optedOut),
     lastVisit: daysAgo(now, guest.lastVisitDaysAgo),
     joinedAt: daysAgo(now, guest.joinedDaysAgo),
-    source: 'qr',
+    source: guest.source || 'qr',
   }))
 
   // ------------------------------------------------------------------ events

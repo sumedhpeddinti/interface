@@ -167,7 +167,42 @@ async function main() {
   }
   console.log(`✓ Tables seeded (${seed.tables.length})`)
 
-  // 5. Clear transactional/demo data so system starts completely clean
+  // 5. Seed CRM Guests
+  for (const g of seed.guests) {
+    await prisma.customer.upsert({
+      where: { id: g.id },
+      update: {
+        restaurantId,
+        name: g.name,
+        phone: g.phone,
+        visits: Number(g.visits),
+        totalSpend: Number(g.totalSpend),
+        favoriteDish: g.favoriteDish || '',
+        vegOnly: Boolean(g.vegOnly),
+        optedOut: Boolean(g.optedOut),
+        lastVisit: Number(g.lastVisit),
+        joinedAt: Number(g.joinedAt),
+        source: g.source || 'qr',
+      },
+      create: {
+        id: g.id,
+        restaurantId,
+        name: g.name,
+        phone: g.phone,
+        visits: Number(g.visits),
+        totalSpend: Number(g.totalSpend),
+        favoriteDish: g.favoriteDish || '',
+        vegOnly: Boolean(g.vegOnly),
+        optedOut: Boolean(g.optedOut),
+        lastVisit: Number(g.lastVisit),
+        joinedAt: Number(g.joinedAt),
+        source: g.source || 'qr',
+      },
+    })
+  }
+  console.log(`✓ Guests & CRM seeded (${seed.guests.length})`)
+
+  // 6. Clear transactional/demo orders/invoices so system starts fresh for demo
   await prisma.feedback.deleteMany()
   await prisma.invoice.deleteMany()
   await prisma.orderItem.deleteMany()
@@ -175,10 +210,9 @@ async function main() {
   await prisma.cashTransaction.deleteMany()
   await prisma.cashShift.deleteMany()
   await prisma.expense.deleteMany()
-  await prisma.customer.deleteMany()
   await prisma.campaign.deleteMany()
   await prisma.auditEvent.deleteMany()
-  console.log('✓ Cleaned transactional history (orders, invoices, shifts, expenses, guests, feedback, events)')
+  console.log('✓ Cleaned transactional history (orders, invoices, shifts, expenses, campaigns, feedback, events)')
 
   console.log('✅ Database seeding complete! Connected directly to clean PostgreSQL database.')
 }

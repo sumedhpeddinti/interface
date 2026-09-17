@@ -1,5 +1,6 @@
 import { prisma } from '../db/client.js'
 import { env } from '../config/env.js'
+import { buildSeedState } from '../../../src/data/seedState.js'
 
 export async function getFullStoreState(restaurantId = env.DEFAULT_RESTAURANT_ID) {
   let restaurant = await prisma.restaurant.findFirst({
@@ -205,10 +206,52 @@ export async function getFullStoreState(restaurantId = env.DEFAULT_RESTAURANT_ID
     by: e.by,
   }))
 
-  const guests = await prisma.customer.findMany({
+  let guests = await prisma.customer.findMany({
     where: { restaurantId },
     orderBy: { lastVisit: 'desc' },
   })
+
+  if (guests.length === 0) {
+    try {
+      const seed = buildSeedState()
+      for (const g of seed.guests) {
+        await prisma.customer.upsert({
+          where: { id: g.id },
+          update: {
+            restaurantId,
+            name: g.name,
+            phone: g.phone,
+            visits: Number(g.visits),
+            totalSpend: Number(g.totalSpend),
+            favoriteDish: g.favoriteDish || '',
+            vegOnly: Boolean(g.vegOnly),
+            optedOut: Boolean(g.optedOut),
+            lastVisit: Number(g.lastVisit),
+            joinedAt: Number(g.joinedAt),
+            source: g.source || 'qr',
+          },
+          create: {
+            id: g.id,
+            restaurantId,
+            name: g.name,
+            phone: g.phone,
+            visits: Number(g.visits),
+            totalSpend: Number(g.totalSpend),
+            favoriteDish: g.favoriteDish || '',
+            vegOnly: Boolean(g.vegOnly),
+            optedOut: Boolean(g.optedOut),
+            lastVisit: Number(g.lastVisit),
+            joinedAt: Number(g.joinedAt),
+            source: g.source || 'qr',
+          },
+        })
+      }
+      guests = await prisma.customer.findMany({
+        where: { restaurantId },
+        orderBy: { lastVisit: 'desc' },
+      })
+    } catch (_) {}
+  }
 
   const formattedGuests = guests.map((g) => ({
     id: g.id,
@@ -221,7 +264,7 @@ export async function getFullStoreState(restaurantId = env.DEFAULT_RESTAURANT_ID
     optedOut: g.optedOut,
     lastVisit: g.lastVisit,
     joinedAt: g.joinedAt,
-    source: g.source,
+    source: g.source || 'qr',
   }))
 
   const campaigns = await prisma.campaign.findMany({
