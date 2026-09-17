@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.4.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.1",
     "bcryptjs": "^3.0.3",
     "concurrently": "^10.0.5",
     "cookie-parser": "^1.4.7",
@@ -35,16 +37,14 @@
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
     "supertest": "^7.2.2",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.3",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
-    "@vitejs/plugin-react": "^6.1.1",
     "jsdom": "^29.1.1",
-    "tailwindcss": "^4.3.3",
-    "vite": "^8.3.0",
     "vitest": "^5.0.1"
   }
 }

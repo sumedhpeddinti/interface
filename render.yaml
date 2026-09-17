@@ -4,7 +4,7 @@ services:
     name: ganesh-cafe-pos
     env: node
     plan: free
-    buildCommand: npm install && npm run build && npm run db:push && npm run db:seed
+    buildCommand: npm install --include=dev && npm run build && npm run db:push && npm run db:seed
     startCommand: npm start
     envVars:
       - key: NODE_ENV
