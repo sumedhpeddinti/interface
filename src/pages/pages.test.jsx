@@ -127,6 +127,12 @@ describe('guest app', () => {
     expect(container.textContent).toContain('Table T9')
   })
 
+  it('honours ?table=T11 and lands directly on Table T11 interface', () => {
+    const { container } = renderGuest('/?table=T11')
+    expect(container.textContent).toContain('Table T11')
+    expect(container.textContent).toContain('Balcony')
+  })
+
   it('opens the review sheet directly for ?feedback=1', () => {
     const { container } = renderGuest('/?feedback=1')
     expect(container.textContent).toMatch(/How was|rating|review/i)

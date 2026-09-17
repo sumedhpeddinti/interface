@@ -28,12 +28,11 @@ export function sectionOf(tableId) {
   return mockTables.find((table) => table.id === tableId)?.section || 'Main Floor'
 }
 
-/** Accepts "T5", "t5", "5" or a QR payload and returns a valid table id. */
+/** Accepts "T5", "t5", "5", "T11" or a QR payload and returns a valid table id. */
 export function normalizeTableId(value) {
   if (value === null || value === undefined) return null
   const raw = String(value).trim().toUpperCase()
-  const match = raw.match(/T?(\d{1,2})/)
+  const match = raw.match(/T?(\d{1,3})/)
   if (!match) return null
-  const id = `T${Number(match[1])}`
-  return TABLE_IDS.includes(id) ? id : null
+  return `T${Number(match[1])}`
 }

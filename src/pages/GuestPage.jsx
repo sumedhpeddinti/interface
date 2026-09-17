@@ -31,21 +31,26 @@ export default function GuestPage() {
   const linkTable = normalizeTableId(params.tableId || searchParams.get('table'))
   const promoParam = searchParams.get('promo')
   const feedbackOnly = searchParams.get('feedback') === '1'
-  const adopted = useRef(false)
 
-  /* Adopt the QR payload once: /t/:tableId, ?table=T5, ?promo=CODE, ?feedback=1 */
+  /* Adopt the QR payload: /t/:tableId, ?table=T11, ?promo=CODE, ?feedback=1 */
   useEffect(() => {
-    if (adopted.current) return
-    adopted.current = true
     if (linkTable && linkTable !== state.ui.guestTableId) {
       actions.setGuestTable({ tableId: linkTable })
+      setView('menu')
     }
-    if (promoParam) actions.setUi({ patch: { promoCode: promoParam.toUpperCase() } })
-    if (feedbackOnly) setFeedbackOpen(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [linkTable, state.ui.guestTableId, actions])
 
-  const tableId = state.ui.guestTableId || 'T1'
+  useEffect(() => {
+    if (promoParam && promoParam.toUpperCase() !== state.ui.promoCode) {
+      actions.setUi({ patch: { promoCode: promoParam.toUpperCase() } })
+    }
+  }, [promoParam, state.ui.promoCode, actions])
+
+  useEffect(() => {
+    if (feedbackOnly) setFeedbackOpen(true)
+  }, [feedbackOnly])
+
+  const tableId = linkTable || state.ui.guestTableId || 'T1'
   const table = state.tables.find((entry) => entry.id === tableId)
   const promo = state.ui.promoCode || null
   const installUnlocked = Boolean(state.ui.appInstalled)
