@@ -158,18 +158,18 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
         )}
 
         {!notificationsOn && (
-          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 border-t border-orange-200 bg-orange-50/60 px-4 py-1.5">
-            <span className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-medium text-orange-950">
-              <BellRing size={11} strokeWidth={2.2} className="shrink-0 text-orange-600" />
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 border-t border-stone-200 bg-[#FAF7F4] px-4 py-1.5">
+            <span className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-medium text-stone-800">
+              <BellRing size={11} strokeWidth={2} className="shrink-0 text-[#C15F3D]" />
               Get 2% extra off for keeping the notifications on
             </span>
             <Button
               size="xs"
               variant="secondary"
-              className="!text-[10px] !py-0.5 !px-2.5 font-semibold text-orange-800 bg-white hover:bg-orange-50 border-orange-300 shadow-2xs rounded-none"
+              className="!text-[10px] !py-0.5 !px-2.5 font-medium text-stone-800 bg-white hover:bg-stone-100 border-stone-300 shadow-2xs rounded-md"
               onClick={() => setNotifModalOpen(true)}
             >
-              <BellRing size={10} className="mr-1 text-orange-600" />
+              <BellRing size={10} className="mr-1 text-[#C15F3D]" />
               Turn on notifications
             </Button>
           </div>
@@ -237,15 +237,16 @@ export function InstallHelpModal({ open, onClose, onClaim }) {
   )
 }
 
-/* ------------------------------------------------ prominent square solid popup notification modal -- */
+/* ------------------------------------------------ Claude-style clean minimal popup notification modal -- */
 
 export function NotificationPromptModal({ open, onClose, onAccept }) {
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Soft dark backdrop */}
       <div
-        className="fixed inset-0 bg-zinc-950/50 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -253,84 +254,73 @@ export function NotificationPromptModal({ open, onClose, onAccept }) {
         role="dialog"
         aria-modal="true"
         aria-label="Turn on Notifications"
-        className="relative z-10 flex w-full max-w-[360px] flex-col overflow-hidden border-2 border-orange-500 bg-white shadow-2xl"
+        className="relative z-10 flex w-full max-w-[350px] flex-col rounded-lg border border-stone-200 bg-white p-6 shadow-xl text-left"
       >
-        {/* Top Header Bar */}
-        <div className="flex items-center justify-between border-b border-orange-500 bg-orange-500 px-4 py-3 text-white">
-          <div className="flex items-center gap-2">
-            <BellRing size={18} strokeWidth={2.2} />
-            <span className="text-xs font-bold uppercase tracking-wider">Live Updates</span>
-          </div>
+        {/* Top Header Row with Subtle Tag and Close Button */}
+        <div className="flex items-center justify-between pb-1">
+          <span className="inline-flex items-center gap-1 rounded bg-[#F7ECE7] px-2 py-0.5 text-[10px] font-semibold tracking-wide text-[#C15F3D]">
+            <Sparkles size={11} />
+            Special Offer · 2% Off
+          </span>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-6 w-6 items-center justify-center border border-white/30 bg-orange-600 text-white hover:bg-orange-700 transition-colors"
+            className="rounded p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
           >
-            <X size={14} />
+            <X size={16} />
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="flex flex-col items-center p-6 text-center">
-          {/* Boxed Icon & Offer Tag */}
-          <div className="mb-4 flex items-center justify-center">
-            <div className="relative flex h-16 w-16 items-center justify-center border-2 border-orange-500 bg-orange-50 text-orange-600 shadow-xs">
-              <BellRing size={28} strokeWidth={2.2} />
-              <span className="absolute -bottom-2.5 bg-orange-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white border border-white shadow-xs">
-                +2% OFF
-              </span>
-            </div>
+        {/* Headline */}
+        <h3 className="mt-3 text-base font-semibold text-stone-900">
+          Turn on Notifications
+        </h3>
+
+        {/* Body Copy */}
+        <p className="mt-1.5 text-xs leading-relaxed text-stone-600">
+          Enable real-time updates as your food is prepared in the kitchen, and get an{' '}
+          <strong className="font-medium text-[#C15F3D]">extra 2% discount</strong> applied directly to your bill.
+        </p>
+
+        {/* Clean Minimalist Benefit List */}
+        <div className="mt-4 rounded-md border border-stone-200/80 bg-[#FAF7F4] p-3 space-y-2">
+          <div className="flex items-start gap-2 text-xs text-stone-700">
+            <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#EFE3DC] text-[#C15F3D] text-[9px] font-bold">
+              ✓
+            </span>
+            <span className="text-[11px] leading-snug">
+              Real-time kitchen alerts for food preparation
+            </span>
           </div>
-
-          <h3 className="text-lg font-bold text-zinc-900 tracking-tight">
-            Turn on Notifications
-          </h3>
-
-          <p className="mt-2 text-xs leading-relaxed text-zinc-600">
-            Enable real-time updates as your food is prepared in the kitchen, and get an{' '}
-            <strong className="font-bold text-orange-600">extra 2% discount</strong> applied directly to your bill!
-          </p>
-
-          {/* Solid Boxed Features */}
-          <div className="mt-4 w-full border border-orange-200 bg-orange-50/60 p-3 text-left text-xs text-zinc-800 space-y-2">
-            <div className="flex items-start gap-2.5">
-              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center bg-orange-500 text-white text-[10px] font-bold">
-                ✓
-              </span>
-              <span className="font-medium text-[11px] leading-tight text-zinc-800">
-                Real-time kitchen alerts for food preparation
-              </span>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center bg-orange-500 text-white text-[10px] font-bold">
-                %
-              </span>
-              <span className="font-medium text-[11px] leading-tight text-zinc-800">
-                Extra 2% discount automatically applied
-              </span>
-            </div>
+          <div className="flex items-start gap-2 text-xs text-stone-700">
+            <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#EFE3DC] text-[#C15F3D] text-[9px] font-bold">
+              %
+            </span>
+            <span className="text-[11px] leading-snug">
+              Extra 2% discount automatically applied
+            </span>
           </div>
+        </div>
 
-          {/* Solid Boxed Action Buttons */}
-          <div className="mt-5 w-full space-y-2">
-            <button
-              type="button"
-              className="flex w-full items-center justify-center gap-2 border border-orange-600 bg-orange-600 px-4 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:bg-orange-700 active:bg-orange-800 transition-colors"
-              onClick={onAccept}
-            >
-              <BellRing size={14} />
-              Turn on notifications
-            </button>
+        {/* Action Buttons */}
+        <div className="mt-5 space-y-2">
+          <button
+            type="button"
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-[#DA7756] hover:bg-[#C15F3D] active:bg-[#B05333] px-4 py-2.5 text-xs font-medium text-white shadow-xs transition-colors"
+            onClick={onAccept}
+          >
+            <BellRing size={13} strokeWidth={2.2} />
+            Turn on notifications
+          </button>
 
-            <button
-              type="button"
-              className="w-full border border-zinc-200 bg-white px-4 py-2 text-xs font-medium text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-colors"
-              onClick={onClose}
-            >
-              Do not accept (Maybe later)
-            </button>
-          </div>
+          <button
+            type="button"
+            className="w-full text-center py-1 text-xs text-stone-500 hover:text-stone-800 transition-colors"
+            onClick={onClose}
+          >
+            Do not accept (Maybe later)
+          </button>
         </div>
       </div>
     </div>
