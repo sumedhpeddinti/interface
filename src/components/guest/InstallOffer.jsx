@@ -256,12 +256,11 @@ export function NotificationPromptModal({ open, onClose, onAccept }) {
         aria-label="Turn on Notifications"
         className="relative z-10 flex w-full max-w-[350px] flex-col rounded-lg border border-stone-200 bg-white p-6 shadow-xl text-left"
       >
-        {/* Top Header Row with Subtle Tag and Close Button */}
+        {/* Top Header Row with Close Button */}
         <div className="flex items-center justify-between pb-1">
-          <span className="inline-flex items-center gap-1 rounded bg-[#F7ECE7] px-2 py-0.5 text-[10px] font-semibold tracking-wide text-[#C15F3D]">
-            <Sparkles size={11} />
-            Special Offer · 2% Off
-          </span>
+          <h3 className="text-base font-semibold text-stone-900">
+            Turn on Notifications
+          </h3>
           <button
             type="button"
             onClick={onClose}
@@ -272,13 +271,8 @@ export function NotificationPromptModal({ open, onClose, onAccept }) {
           </button>
         </div>
 
-        {/* Headline */}
-        <h3 className="mt-3 text-base font-semibold text-stone-900">
-          Turn on Notifications
-        </h3>
-
         {/* Body Copy */}
-        <p className="mt-1.5 text-xs leading-relaxed text-stone-600">
+        <p className="mt-1 text-xs leading-relaxed text-stone-600">
           Enable real-time updates as your food is prepared in the kitchen, and get an{' '}
           <strong className="font-medium text-[#C15F3D]">extra 2% discount</strong> applied directly to your bill.
         </p>
