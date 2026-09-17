@@ -184,7 +184,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -333,7 +333,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: false,
     isBestseller: true,
-    image: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=600&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/b/bd/Tandoorimumbai.jpg',
     available: true,
   },
   {
@@ -346,7 +346,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: false,
     isBestseller: false,
-    image: 'https://images.unsplash.com/photo-1610057099431-d73a1c9d2f2f?auto=format&fit=crop&w=600&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Chicken_Tikka_Kabab.JPG/800px-Chicken_Tikka_Kabab.JPG',
     available: true,
   },
   {
@@ -506,7 +506,7 @@ export const mockMenu = [
     station: 'Cold / Salads',
     isVeg: true,
     isBestseller: true,
-    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Gulab_jamun_%28Gibraltar%29.jpg/800px-Gulab_jamun_%28Gibraltar%29.jpg',
     available: true,
   },
   {
@@ -545,7 +545,7 @@ export const mockMenu = [
     station: 'Cold / Salads',
     isVeg: true,
     isBestseller: false,
-    image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Ras_Malai_-_Kolkata_2013-09-08_0237.JPG/800px-Ras_Malai_-_Kolkata_2013-09-08_0237.JPG',
     available: true,
   },
   {
