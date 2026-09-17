@@ -99,8 +99,11 @@ export default function GuestPage() {
     if (ids.some((id) => !seenRounds.current.includes(id))) {
       seenRounds.current = ids
       setView('tracker')
+    } else if (ids.length === 0 && view === 'tracker') {
+      seenRounds.current = []
+      setView('menu')
     }
-  }, [openRoundKey])
+  }, [openRoundKey, view])
 
   /* Settlement arrives from the POS — surface the review sheet immediately. */
   const prompt = state.feedbackPrompt?.tableId === tableId ? state.feedbackPrompt : null
@@ -229,6 +232,13 @@ export default function GuestPage() {
             bill={bill}
             waiterPending={waiterPending}
             onAddMore={() => setView('menu')}
+            onCancelOrder={(orderId) =>
+              actions.voidOrder({
+                orderId,
+                actor: 'Guest',
+                reason: 'Cancelled by guest',
+              })
+            }
           />
         ) : (
           <>

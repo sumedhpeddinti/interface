@@ -123,7 +123,24 @@ function RoundRow({ round }) {
   )
 }
 
-export function LiveTracker({ tableId, rounds, bill, onAddMore, waiterPending }) {
+export function LiveTracker({ tableId, rounds = [], bill, onAddMore, onCancelOrder, waiterPending }) {
+  if (!rounds || rounds.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+          <Check size={28} strokeWidth={2.2} />
+        </div>
+        <h3 className="mt-4 text-base font-semibold text-zinc-900">Table {tableId} is clear</h3>
+        <p className="mt-1.5 max-w-xs text-xs text-zinc-500">
+          There are no active orders on this table right now. Browse our menu to start a fresh order!
+        </p>
+        <Button variant="primary" size="md" className="mt-6" onClick={onAddMore}>
+          Browse menu
+        </Button>
+      </div>
+    )
+  }
+
   const latest = rounds[rounds.length - 1]
   const totalBill = bill?.total || 0
   const itemCount = rounds.reduce(
@@ -133,6 +150,15 @@ export function LiveTracker({ tableId, rounds, bill, onAddMore, waiterPending })
 
   return (
     <div className="space-y-4 px-4 py-4">
+      <div className="flex items-center justify-between gap-2">
+        <Button variant="secondary" size="xs" onClick={onAddMore}>
+          ← Back to Menu
+        </Button>
+        <Badge tone="zinc" size="sm">
+          Table {tableId}
+        </Badge>
+      </div>
+
       <Card className="border-zinc-900/10">
         <CardBody className="p-4">
           <div className="flex items-center gap-2.5">
@@ -181,6 +207,19 @@ export function LiveTracker({ tableId, rounds, bill, onAddMore, waiterPending })
           />
           <CardBody className="py-5">
             <Stepper round={latest} />
+            {latest.status === ROUND_STATUS.SENT && onCancelOrder ? (
+              <div className="mt-4 flex items-center justify-between rounded-lg border border-rose-100 bg-rose-50/50 p-2.5">
+                <p className="text-[11px] text-zinc-600">Want to cancel this round?</p>
+                <Button
+                  size="xs"
+                  variant="secondary"
+                  className="!text-[10px] !py-0.5 !px-2 text-rose-700 bg-white hover:bg-rose-50 border-rose-200"
+                  onClick={() => onCancelOrder(latest.id)}
+                >
+                  Cancel order
+                </Button>
+              </div>
+            ) : null}
           </CardBody>
         </Card>
       ) : null}

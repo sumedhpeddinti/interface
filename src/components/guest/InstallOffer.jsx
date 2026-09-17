@@ -40,6 +40,7 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
   const os = useNotificationPermission()
   const [phase, setPhase] = useState('idle') // idle → installing → notifying → done
   const [helpOpen, setHelpOpen] = useState(false)
+  const [notifModalOpen, setNotifModalOpen] = useState(false)
 
   const installed = rewardActive || status === INSTALL_STATE.INSTALLED
   /* Live view of the browser's real permission — survives reloads, unlike
@@ -73,6 +74,19 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
     setPhase('done')
   }
 
+  async function handleApplyNotification() {
+    const permission = await os.request()
+    if (permission === 'granted') {
+      await showSystemNotification({
+        title: 'Notifications enabled · Ganesh Café',
+        body: '2% extra discount applied! We will ping this device when your food is ready.',
+        tag: 'ganesh-cafe-alerts-enabled',
+        kind: 'campaign',
+      })
+    }
+    setNotifModalOpen(false)
+  }
+
   /* ---------------------------------------------------------------- render -- */
 
   const label =
@@ -87,55 +101,97 @@ export function InstallOffer({ rewardActive, rewardCode = 'APP10', onUnlock }) {
   /* A slim full-width strip for the guest header: the offer on the left, the
      one-tap action on the right. Once installed it reads as a done deal. */
   return (
-    <div className="flex items-center justify-between gap-2 border-t border-zinc-200 px-4 py-1.5">
+    <div className="border-t border-zinc-200 bg-zinc-50/50">
       {installed ? (
-        <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 px-4 py-1.5">
           <span className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-medium text-emerald-700">
             <Check size={12} strokeWidth={2.6} />
             <span className="tnum">{rewardCode}</span> applied · 10% off every round
           </span>
           {notificationsOn ? (
             <Badge tone="emerald" size="sm" icon={BellRing}>
-              Alerts on
+              Alerts on · 2% extra applied
             </Badge>
-          ) : (
-            <Button
-              size="xs"
-              variant="secondary"
-              className="!text-[10px] !py-0.5 !px-2 text-amber-700 bg-amber-50 hover:bg-amber-100 border-amber-200"
-              onClick={async () => {
-                const p = await os.request()
-                if (p === 'granted') {
-                  showSystemNotification({
-                    title: 'Alerts enabled · Ganesh Café',
-                    body: 'You will receive instant updates on this device!',
-                    kind: 'campaign',
-                  })
-                }
-              }}
-            >
-              <BellRing size={10} className="mr-1 text-amber-600" />
-              Enable alerts
-            </Button>
-          )}
-        </span>
+          ) : null}
+        </div>
       ) : (
-        <>
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 px-4 py-1.5">
           <span className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-medium text-zinc-600">
             <Percent size={11} strokeWidth={2.2} className="shrink-0 text-amber-600" />
             Get 10% off · no minimum
           </span>
           <Button
             size="xs"
-            variant="secondary"
+            variant="primary"
+            className="!bg-emerald-600 hover:!bg-emerald-700 active:!bg-emerald-800 !text-white !border-emerald-600 font-medium shadow-xs"
             disabled={phase !== 'idle' && phase !== 'done'}
             onClick={start}
           >
             {phase === 'done' ? <Check size={11} strokeWidth={2.4} /> : <Download size={11} strokeWidth={2.2} />}
             {label}
           </Button>
-        </>
+        </div>
       )}
+
+      {!notificationsOn && (
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 border-t border-zinc-200/70 bg-amber-50/40 px-4 py-1.5">
+          <span className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-medium text-zinc-700">
+            <BellRing size={11} strokeWidth={2.2} className="shrink-0 text-amber-600" />
+            Get 2% extra off for keeping the notifications on
+          </span>
+          <Button
+            size="xs"
+            variant="secondary"
+            className="!text-[10px] !py-0.5 !px-2.5 font-medium text-amber-800 bg-white hover:bg-amber-50 border-amber-300 shadow-2xs"
+            onClick={() => setNotifModalOpen(true)}
+          >
+            <BellRing size={10} className="mr-1 text-amber-600" />
+            Turn on notifications
+          </Button>
+        </div>
+      )}
+
+      {/* Notification Permission Popup Modal */}
+      <Modal
+        open={notifModalOpen}
+        onClose={() => setNotifModalOpen(false)}
+        title="Turn on Notifications"
+        subtitle="Get 2% extra off on your orders"
+        icon={BellRing}
+        size="sm"
+        footer={
+          <div className="flex w-full justify-end gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setNotifModalOpen(false)}
+            >
+              Deny
+            </Button>
+            <Button
+              size="sm"
+              className="!bg-emerald-600 hover:!bg-emerald-700 active:!bg-emerald-800 !text-white !border-emerald-600"
+              onClick={handleApplyNotification}
+            >
+              <Check size={12} strokeWidth={2.4} className="mr-1" />
+              Apply
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-3">
+          <p className="text-xs leading-relaxed text-zinc-600">
+            Keep notifications on to receive real-time updates when your food is being prepared and served, and get an{' '}
+            <strong className="font-semibold text-emerald-700">extra 2% discount</strong> applied directly to your bill.
+          </p>
+          <div className="rounded-md border border-emerald-100 bg-emerald-50/70 p-2.5">
+            <div className="flex items-center gap-2 text-xs font-medium text-emerald-800">
+              <Percent size={13} className="shrink-0 text-emerald-600" />
+              <span>Instant 2% Extra Off + Table Alerts</span>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
