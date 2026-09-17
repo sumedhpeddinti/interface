@@ -1,5 +1,5 @@
 /* Menu catalog. Prices are tax-exclusive; GST is applied at the register.
-   `image` is optional — when empty the UI renders a monochrome dish tile. */
+   `image` contains authentic, high-resolution food photography URLs. */
 
 export const mockMenu = [
   // ---------------------------------------------------------------- Top Picks
@@ -13,7 +13,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -26,7 +26,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -39,7 +39,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: false,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -52,7 +52,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -65,7 +65,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: false,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
 
@@ -80,7 +80,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -93,7 +93,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -106,7 +106,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -119,7 +119,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: false,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -132,7 +132,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: false,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1545247181-516773cae7be?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -145,7 +145,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1642821373181-696a54913e93?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -158,7 +158,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -171,7 +171,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -184,7 +184,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -197,7 +197,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
 
@@ -212,7 +212,7 @@ export const mockMenu = [
     station: 'Cold / Salads',
     isVeg: false,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -225,7 +225,7 @@ export const mockMenu = [
     station: 'Cold / Salads',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1616501268209-edfa7a0e7911?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -238,7 +238,7 @@ export const mockMenu = [
     station: 'Cold / Salads',
     isVeg: true,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -251,7 +251,7 @@ export const mockMenu = [
     station: 'Cold / Salads',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
 
@@ -266,7 +266,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -279,7 +279,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1569058242252-623df46b5025?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -292,7 +292,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -305,7 +305,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -318,7 +318,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
 
@@ -333,7 +333,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: false,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -346,7 +346,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: false,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1610057099431-d73a1c9d2f2f?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -359,7 +359,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: false,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -372,7 +372,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: false,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -385,7 +385,7 @@ export const mockMenu = [
     station: 'Hot Kitchen',
     isVeg: false,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
 
@@ -400,7 +400,7 @@ export const mockMenu = [
     station: 'Bar / Beverages',
     isVeg: true,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1561047029-3000c68339ca?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -413,7 +413,7 @@ export const mockMenu = [
     station: 'Bar / Beverages',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -426,7 +426,7 @@ export const mockMenu = [
     station: 'Bar / Beverages',
     isVeg: true,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1571006687898-75c3db083984?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -439,7 +439,7 @@ export const mockMenu = [
     station: 'Bar / Beverages',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -452,7 +452,7 @@ export const mockMenu = [
     station: 'Bar / Beverages',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -465,7 +465,7 @@ export const mockMenu = [
     station: 'Bar / Beverages',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -478,7 +478,7 @@ export const mockMenu = [
     station: 'Bar / Beverages',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -491,7 +491,7 @@ export const mockMenu = [
     station: 'Bar / Beverages',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
 
@@ -506,7 +506,7 @@ export const mockMenu = [
     station: 'Cold / Salads',
     isVeg: true,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -519,7 +519,7 @@ export const mockMenu = [
     station: 'Cold / Salads',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -532,7 +532,7 @@ export const mockMenu = [
     station: 'Cold / Salads',
     isVeg: true,
     isBestseller: true,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1564355808539-22fda35bed7e?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -545,7 +545,7 @@ export const mockMenu = [
     station: 'Cold / Salads',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
   {
@@ -558,7 +558,7 @@ export const mockMenu = [
     station: 'Cold / Salads',
     isVeg: true,
     isBestseller: false,
-    image: '',
+    image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=600&q=80',
     available: true,
   },
 ]
