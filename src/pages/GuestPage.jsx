@@ -28,7 +28,11 @@ export default function GuestPage() {
   const [view, setView] = useState('menu')
   const [feedbackOpen, setFeedbackOpen] = useState(false)
 
-  const linkTable = normalizeTableId(params.tableId || searchParams.get('table'))
+  const linkParam = params.tableId || searchParams.get('table')
+  const linkTable = useMemo(
+    () => normalizeTableId(linkParam, state.tables),
+    [linkParam, state.tables],
+  )
   const promoParam = searchParams.get('promo')
   const feedbackOnly = searchParams.get('feedback') === '1'
 
@@ -50,8 +54,16 @@ export default function GuestPage() {
     if (feedbackOnly) setFeedbackOpen(true)
   }, [feedbackOnly])
 
-  const tableId = linkTable || state.ui.guestTableId || 'T1'
-  const table = state.tables.find((entry) => entry.id === tableId)
+  const tableId = linkTable || state.ui.guestTableId || state.tables?.[0]?.id || 'T1'
+  const table = useMemo(
+    () =>
+      state.tables.find((entry) => entry.id === tableId) || {
+        id: tableId,
+        section: 'Main Floor',
+        seats: 4,
+      },
+    [state.tables, tableId],
+  )
   const promo = state.ui.promoCode || null
   const installUnlocked = Boolean(state.ui.appInstalled)
 

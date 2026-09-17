@@ -28,11 +28,25 @@ export function sectionOf(tableId) {
   return mockTables.find((table) => table.id === tableId)?.section || 'Main Floor'
 }
 
-/** Accepts "T5", "t5", "5", "T11" or a QR payload and returns a valid table id. */
-export function normalizeTableId(value) {
+/** Accepts "T5", "t5", "5", "T11", "11" or a QR payload and returns a valid normalized table id. */
+export function normalizeTableId(value, tables = []) {
   if (value === null || value === undefined) return null
-  const raw = String(value).trim().toUpperCase()
-  const match = raw.match(/T?(\d{1,3})/)
-  if (!match) return null
-  return `T${Number(match[1])}`
+  const raw = String(value).trim()
+  if (!raw) return null
+
+  // 1. Match against dynamic tables in store/DB if provided
+  if (Array.isArray(tables) && tables.length > 0) {
+    const direct = tables.find((t) => t.id.toLowerCase() === raw.toLowerCase())
+    if (direct) return direct.id
+    const prefixed = tables.find((t) => t.id.toLowerCase() === `t${raw}`.toLowerCase())
+    if (prefixed) return prefixed.id
+  }
+
+  // 2. Standard table ID pattern (e.g. "T11", "t11", "11", "T5")
+  const match = raw.toUpperCase().match(/T?(\d{1,4})/)
+  if (match) {
+    return `T${Number(match[1])}`
+  }
+
+  return raw
 }
