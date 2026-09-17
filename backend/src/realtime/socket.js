@@ -39,7 +39,10 @@ export function getIO() {
 
 export function broadcastEvent(room, event, data) {
   if (io) {
-    io.to(room).emit(event, data)
+    if (room) {
+      io.to(room).emit(event, data)
+    }
+    io.emit(event, data)
   }
 }
 

@@ -112,16 +112,34 @@ export default function CampaignsPage() {
     setAudience(template.audience)
   }
 
-  /* Proves the channel end to end: if this lands in the system notification
-     centre, a real broadcast will too. */
+  /* Proves the channel end to end across ALL devices: sends notification locally
+     and broadcasts to every connected device via the backend WebSocket channel */
   async function sendTest() {
-    const result = await showSystemNotification({
-      title: 'Test broadcast · Ganesh Café',
+    const testPayload = {
+      channel: 'push',
+      name: 'Test broadcast · Ganesh Café',
+      heading: 'Test broadcast · Ganesh Café',
       body: 'This is a real system notification. If you can see it, the channel is live.',
+      coupon: 'TEST10',
+      audience: 'all',
+      audienceLabel: 'All devices',
+      audienceSize: audienceReach || 1,
+      createdBy: staff?.name || 'Manager',
+    }
+
+    const result = await showSystemNotification({
+      title: testPayload.heading,
+      body: testPayload.body,
       tag: 'ganesh-cafe-test',
       kind: 'campaign',
     })
     setTestOutcome(result)
+
+    try {
+      await actions.sendCampaign(testPayload)
+    } catch (err) {
+      console.warn('Broadcast send error:', err)
+    }
   }
 
   function dispatch() {

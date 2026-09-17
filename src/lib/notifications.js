@@ -107,20 +107,29 @@ export async function showSystemNotification({
 
   if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
     try {
-      const registration = await navigator.serviceWorker.getRegistration()
-      if (registration) {
+      let registration = await navigator.serviceWorker.getRegistration()
+      if (!registration && navigator.serviceWorker.ready) {
+        registration = await navigator.serviceWorker.ready
+      }
+      if (!registration) {
+        registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      }
+      if (registration && typeof registration.showNotification === 'function') {
         await registration.showNotification(title, options)
         return { shown: true, via: 'service-worker' }
       }
-    } catch {
-      /* the worker path failed — the constructor below still counts as real */
+    } catch (err) {
+      console.warn('Service worker notification error:', err)
     }
   }
 
   try {
-    new window.Notification(title, options) // eslint-disable-line no-new
-    return { shown: true, via: 'constructor' }
-  } catch {
+    if (typeof window !== 'undefined' && window.Notification) {
+      new window.Notification(title, options) // eslint-disable-line no-new
+      return { shown: true, via: 'constructor' }
+    }
+  } catch (err) {
+    console.warn('Constructor notification error:', err)
     return { shown: false, via: 'error' }
   }
 }
